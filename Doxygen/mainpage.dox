@@ -1,0 +1,29 @@
+/**
+\mainpage Eurobot 2014 prompting software
+
+This is the documentation page for the software of the Eurobot 2014 prompting system.
+<p>
+The software is split up into four sections:
+
+<DL>
+<DT><STRONG>BSP</STRONG>
+<DD>The board suppord package for the uC on the PCB.
+
+<DT><STRONG>FreeRTOS</STRONG>
+<DD>FreeRTOS is the used operating system in the software.<br>
+In this file are all the librarys used to run FreeRTOS.
+
+<DT><STRONG>application</STRONG>
+<DD>In the application folder are all the tasks files and interrupt functions,<br>
+used in the software.
+
+<DT><STRONG>lib</STRONG>
+<DD>Here are all the .c and .h files used to interact with the hardware on the PCB.
+</DL>
+
+<p>
+In this documentation only the two sections application and lib are outlined.<br>
+The following illustration shows the cooperation between the four sections. 
+
+\image html StructedDesign.pdf
+*/

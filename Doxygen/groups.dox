@@ -1,0 +1,9 @@
+/**
+
+\defgroup hwlibrary Hardware library
+\brief   Library group for all hardware files
+
+\defgroup application Application
+\brief   Library group for all application files
+
+*/
