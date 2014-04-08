@@ -1,0 +1,30 @@
+# Object files
+*.o
+*.ko
+
+# Libraries
+#*.lib
+#*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Atollic
+.settings/
+Debug/
+*.elf
+*.elf.launch
+.cproject
+
+# Windows files
+[Tt]humbs.db
+*.DS_Store
+*.lnk
