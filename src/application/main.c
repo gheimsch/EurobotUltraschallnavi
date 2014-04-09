@@ -102,8 +102,8 @@ int main(void) {
 //	calculateDrift();
 
     /* Application initializations */
-    initCANGatekeeper(); /* have to the last initialisation modul! */
     setFunctionCANListener((CAN_function_listener_t)posRequest, 0x040);
+    initCANGatekeeper(); /* have to the last initialisation modul! */
 
     /* Start the scheduler */
     vTaskStartScheduler();

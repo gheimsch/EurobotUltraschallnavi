@@ -179,6 +179,7 @@ void initCANGatekeeper(void)
     /* create tasks */
     xTaskCreate( vCANRx, ( signed char * ) CAN_RX_TASK_NAME, CAN_STACK_SIZE, NULL, CAN_TASK_PRIORITY, NULL );
     xTaskCreate( vCANTx, ( signed char * ) CAN_TX_TASK_NAME, CAN_STACK_SIZE, NULL, CAN_TASK_PRIORITY, NULL );
+    txNaviPositionResponse(300,300,45,0);
 }
 
 
