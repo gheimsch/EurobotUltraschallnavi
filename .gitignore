@@ -1,10 +1,12 @@
 # Object files
 *.o
 *.ko
+*.obj
+*.elf
 
 # Libraries
-#*.lib
-#*.a
+*.lib
+*.a
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -16,17 +18,6 @@
 *.exe
 *.out
 *.app
-
-# Atollic
-.settings/
-Debug/
-*.elf
-*.elf.launch
-.cproject
-.o
-.map
-
-# Windows files
-[Tt]humbs.db
-*.DS_Store
-*.lnk
+*.i*86
+*.x86_64
+*.hex
