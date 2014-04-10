@@ -111,7 +111,7 @@ void initGyr(void) {
 	// if you'd like:
 	writeI2C(Gyro, CTRL_REG5_G, &CTRL_REG5_G_DATA, 1, 100);
 
-	calculateGyroOffsets();
+	//calculateGyroOffsets();
 }
 
 /**

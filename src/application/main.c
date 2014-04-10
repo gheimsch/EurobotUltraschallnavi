@@ -95,12 +95,13 @@ int main(void) {
 
     /* lib initializations */
 
-//    initUART();
-//	initI2C();
-//	initGyr();
+    //initUART();
+	initI2C();
+	initGyr();
 //
 //	calculateDrift();
 
+    //USART_SendData(USART1,"Hello World");
     /* Application initializations */
     setFunctionCANListener((CAN_function_listener_t)posRequest, 0x040);
     initCANGatekeeper(); /* have to the last initialisation modul! */

@@ -37,8 +37,8 @@
 #define I2C_SCL_PIN         GPIO_Pin_6      /* PB.6 */
 #define I2C_SCL_SOURCE      GPIO_PinSource6
 #define I2C_SCL_PORT        GPIOB
-#define I2C_SDA_PIN         GPIO_Pin_9        /* PB.9 */
-#define I2C_SDA_SOURCE      GPIO_PinSource9
+#define I2C_SDA_PIN         GPIO_Pin_7        /* PB.9 */
+#define I2C_SDA_SOURCE      GPIO_PinSource7
 #define I2C_SDA_PORT        GPIOB
 
 
