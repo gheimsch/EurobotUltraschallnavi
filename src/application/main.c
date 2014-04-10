@@ -96,7 +96,7 @@ int main(void) {
     /* lib initializations */
 
 
-    //initUART();
+    //initUART(); // initialise UART
 	initI2C();
 	initGyr();
 
