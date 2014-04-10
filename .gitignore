@@ -23,6 +23,8 @@ Debug/
 *.elf
 *.elf.launch
 .cproject
+.o
+.map
 
 # Windows files
 [Tt]humbs.db

@@ -95,9 +95,15 @@ int main(void) {
 
     /* lib initializations */
 
+<<<<<<< HEAD
     //initUART();
 	initI2C();
 	initGyr();
+=======
+//    initUART(); // initialise UART
+//	initI2C();
+//	initGyr();
+>>>>>>> 1214540487d7b6e13d701e5f074fb6138e599941
 //
 //	calculateDrift();
 
