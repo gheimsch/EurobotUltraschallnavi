@@ -52,7 +52,6 @@
 #define OUT_X_L_G   	0xA8
 #define OUT_TEMP_G 		0x26
 
-xQueueHandle msgqGyroPosition;
 
 /* data to config the gyro */
 static uint8_t CTRL_REG1_G_DATA = 0x0F;
@@ -61,12 +60,11 @@ static uint8_t CTRL_REG3_G_DATA = 0x08;
 static uint8_t CTRL_REG4_G_DATA = 0x00;
 static uint8_t CTRL_REG5_G_DATA = 0x00;
 
-static float gyrScale = 0; // scale of the Gyro set with the sensivity of the devise
+static float gyrScale = 0; 	// scale of the Gyro set with the sensivity of the devise
 static float gyrOffset = 0;	// measured Offset of the gyro
-static float driftyaw = 0;		// constants to compensate linear drift
-static float yaw = 0;		// measured angle
+static float driftyaw = 0;	// constants to compensate linear drift
 
-volatile uint32_t msTicks;	// counts 1ms timeTicks
+float yaw = 0;		// measured angle
 
 typedef struct RungeKuta {
 	float fourth_Prev;
@@ -85,14 +83,13 @@ void initGyr(void);
 void setGyrSensitivity(uint16_t);
 void calculateGyroOffsets(void);
 void calculateDrift(void);
-
 int16_t getGyrValues(void);
 float getTempValue(void);
 void calculateAngle(int16_t, uint32_t);
 float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue);
-void incrementTimer(void);
-void Delay(volatile uint32_t nCount);
-
+static void GyroTask(void* pvParameters);
+void SWV_printfloat(float number, uint32_t digits);
+void SWV_printnum(uint32_t number);
 /* ****************************************************************************/
 /* End Header : GyroTask.c													  */
 /* ****************************************************************************/
@@ -117,9 +114,12 @@ void initGyroTask(void) {
 	xTaskCreate(GyroTask, (signed char *) GYROTASK_NAME, GYROTASK_STACK_SIZE,
 			NULL, GYROTASK_PRIORITY, NULL);
 
-	/* create Message Queue Gyro to Position Task */
-	msgqGyroPosition =
-			xQueueCreate(GYROPOSITION_QUEUE_LENGTH, GYROPOSITION_ITEM_SIZE);
+	/* initialise the I2C-Interface to the Gyro */
+	initI2C();
+
+	/* initialise the Gyro */
+	initGyr();
+
 }
 
 /* ****************************************************************************/
@@ -143,7 +143,7 @@ void initGyr(void) {
 	// Enable x, y, z and turn off power down:
 
 	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
-	writeI2C(Accelerometer, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
+	writeI2C(Gyro, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
 
 	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
 	writeI2C(Gyro, CTRL_REG2_G, &CTRL_REG2_G_DATA, 1, 100);
@@ -159,8 +159,6 @@ void initGyr(void) {
 	// CTRL_REG5 controls high-pass filtering of outputs, use it
 	// if you'd like:
 	writeI2C(Gyro, CTRL_REG5_G, &CTRL_REG5_G_DATA, 1, 100);
-
-	//calculateGyroOffsets();
 }
 
 /**
@@ -208,7 +206,7 @@ void calculateGyroOffsets(void) {
 
 		totalGz += gyrValue;
 
-		Delay(10);
+		vTaskDelay(10 / portTICK_RATE_MS);
 	}
 
 	gyrOffset = totalGz / (float) n;
@@ -224,9 +222,9 @@ void calculateGyroOffsets(void) {
 
 void calculateDrift(void) {
 
-	float Gz[100] = { 0 };	// all read out angular rates over 1 sec
-	float tz[100] = { 0 };	// time between the measurements
-	float a[99] = { 0 };	// drift
+	static float Gz[100] = { 0 };	// all read out angular rates over 1 sec
+	static float tz[100] = { 0 };	// time between the measurements
+	static float a[99] = { 0 };	// drift
 	float gyrValue;
 
 	uint32_t t_Start = 0;	// start timer of the measurement
@@ -236,15 +234,15 @@ void calculateDrift(void) {
 	uint16_t nbIterations = 100;
 	uint16_t i = 0;
 
-	t_Start = msTicks;
+	t_Start = xTaskGetTickCount();
 
 	for (i = 0; i < nbIterations; i++) {
 
-		Delay(10);
+		vTaskDelay(10 / portTICK_RATE_MS);
 
 		gyrValue = getGyrValues();
 
-		t_End = msTicks;
+		t_End = xTaskGetTickCount();
 
 		delta_t = t_End - t_Start;
 		t_Start = t_End;
@@ -295,27 +293,6 @@ int16_t getGyrValues(void) {
 
 /**
  *************************************************************************************
- * @brief	get the Data Values of the Temperatur Sensor
- * @param	none
- * @return	tempValue: temperature of the Sensor
- **************************************************************************************
- */
-float getTempValue(void) {
-
-	uint8_t readTemp[6] = { 0 }; // Buffer to save the read out register
-
-	int16_t tempValue;	// measured temperature value
-
-	writeI2C(Gyro, (OUT_TEMP_G), OUT_TEMP_G, 0, 10);
-	readI2C(Gyro, readTemp, 1, 10);
-
-	tempValue = readTemp[0];
-
-	return (float) tempValue;
-
-}
-/**
- *************************************************************************************
  * @brief	calculates the angles of the three axis
  * @param	GyrX: measured angular rate in x-axis
  * 			GyrY: measured angular rate in y-axis
@@ -344,13 +321,7 @@ void calculateAngle(int16_t gyrValue, uint32_t t) {
 		yaw += 360;
 	}
 
-	/*
-	 printf("Z-Achse Gyro: ");
-	 SWV_printfloat(yaw, 1);
-	 printf("\r\n");
-	 printf("\r\n");
-	 printf("\r\n");
-	 */
+
 
 }
 
@@ -381,23 +352,121 @@ float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue) {
 	return rk->Prev;
 }
 
+/******************************************************************************/
+/* Function: GyroTask */
+/******************************************************************************/
+/*! \brief Gyro Task measures the angular rate and calculates the angle
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 11.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void GyroTask(void* pvParameters) {
+
+	uint32_t t_start = 0;
+	uint32_t t_end = 0;
+	uint32_t t_delta = 0;
+
+	int16_t outGyr = 0;
+
+	t_start = xTaskGetTickCount();
+
+	calculateGyroOffsets();
+	calculateDrift();
+
+	/* for ever */
+	for (;;) {
+
+		//calc Drift here when message stillstanding arrived
+
+		vTaskDelay(10 / portTICK_RATE_MS);
+
+		outGyr = getGyrValues();
+
+		t_end = xTaskGetTickCount();
+
+		t_delta = t_end - t_start;
+		t_start = t_end;
+
+		calculateAngle(outGyr, t_delta);
+
+		//SWV_printfloat(yaw, 4);
+
+
+	}
+}
+
+/* ****************************************************************************/
+/* End : GyroTask */
+/* ****************************************************************************/
+
 /**
- * @brief	increments msTick every milisecond
- * @param	msTicks
- * @note	called by SysTick_Handler()
+ * @brief  This function sends numbers to the serial wire viewer.
+ * @param  number: number to be displayed on SWV
+ * @param  digits: number of digits after decimal point
+ * @retval None
  */
-void incrementTimer(void) {
-	msTicks++;
+
+void SWV_printfloat(float number, uint32_t digits) {
+	uint32_t i = 0;
+	//handle negative numbers
+	if (number < 0.0) {
+		ITM_SendChar('-');
+		number = -number;
+	}
+	//round correctly so that uart_printfloat(1.999, 2) shows as "2.00"
+	float rounding = 0.5;
+	for (i = 0; i < digits; ++i)
+		rounding = rounding / 10.0;
+	number = number + rounding;
+
+	//extract the integer part of the number and print it
+	uint64_t int_part = (uint64_t) number;
+	float remainder = (float) (number - (float) int_part);
+	SWV_printnum(int_part); //print the integer part
+	if (digits > 0)
+		ITM_SendChar('.'); //print decimal pint
+	uint32_t toprint;
+	while (digits-- > 0) {
+		remainder = remainder * 10.0;
+		toprint = (uint32_t) remainder;
+		SWV_printnum(toprint);
+		remainder = remainder - toprint;
+	}
 
 }
 
-/*
- * Delay a number of cycles
+/**
+ * @brief   This function sends numbers to the serial wire viewer.
+ * @param  number: number to be displayed on SWV
+ * @retval None
  */
-void Delay(volatile uint32_t nCount) {
-	while (nCount--) {
-		int32_t j;
-		for (j = 0; j < 10000; j++) {
-		};
-	};
+
+void SWV_printnum(uint32_t number) {
+	uint8_t buf[8 * sizeof(uint32_t)]; // Assumes 8-bit chars.
+	uint16_t i = 0;
+
+	//if number is 0
+	if (number == 0) {
+		ITM_SendChar('0'); //if number is zero
+		return;
+	}
+	//account for negative numbers
+	if (number < 0) {
+		ITM_SendChar('-');
+		number = number * -1;
+	}
+	while (number > 0) {
+		buf[i++] = number % 10; //display in base 10
+		number = number / 10;
+		//NOTE: the effect of i++ means that the i variable will be at number of digits + 1
+	}
+	for (; i > 0; i--) {
+		ITM_SendChar((char) ('0' + buf[i - 1]));
+	}
 }

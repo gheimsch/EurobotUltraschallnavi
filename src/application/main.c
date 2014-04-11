@@ -52,15 +52,8 @@
 #include "../lib/I2C.h"		/* Own header include */
 
 /* ------------------------- module data declaration -------------------------*/
-uint32_t t_Start;	// Start Timer of the Measurement
-uint32_t t_End;		// End Timer of the Measurement
-uint32_t delta_t = 0;	// measured time
 
-int16_t outGyr;		// angular rate
-float temp = 0;		// temperature
 /* ----------------------- module procedure declaration ----------------------*/
-void SWV_printnum(uint32_t);
-void SWV_printfloat(float, uint32_t);
 
 /* ****************************************************************************/
 /* End Header : main.c														  */
@@ -97,15 +90,14 @@ int main(void) {
 
 
     //initUART(); // initialise UART
-	initI2C();
-	initGyr();
+
+    initPositionTask();
+	initGyroTask();
+
 
 //    initUART(); // initialise UART
-//	initI2C();
-//	initGyr();
 
-//
-//	calculateDrift();
+
 
     //USART_SendData(USART1,"Hello World");
     /* Application initializations */
@@ -176,68 +168,3 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName 
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
-
-/**
- * @brief   This function sends numbers to the serial wire viewer.
- * @param  number: number to be displayed on SWV
- * @retval None
- */
-void SWV_printnum(uint32_t number) {
-	uint8_t buf[8 * sizeof(uint32_t)]; // Assumes 8-bit chars.
-	uint16_t i = 0;
-
-	//if number is 0
-	if (number == 0) {
-		ITM_SendChar('0'); //if number is zero
-		return;
-	}
-	//account for negative numbers
-	if (number < 0) {
-		ITM_SendChar('-');
-		number = number * -1;
-	}
-	while (number > 0) {
-		buf[i++] = number % 10; //display in base 10
-		number = number / 10;
-		//NOTE: the effect of i++ means that the i variable will be at number of digits + 1
-	}
-	for (; i > 0; i--) {
-		ITM_SendChar((char) ('0' + buf[i - 1]));
-	}
-}
-
-/**
- * @brief  This function sends numbers to the serial wire viewer.
- * @param  number: number to be displayed on SWV
- * @param  digits: number of digits after decimal point
- * @retval None
- */
-
-void SWV_printfloat(float number, uint32_t digits) {
-	uint32_t i = 0;
-	//handle negative numbers
-	if (number < 0.0) {
-		ITM_SendChar('-');
-		number = -number;
-	}
-	//round correctly so that uart_printfloat(1.999, 2) shows as "2.00"
-	float rounding = 0.5;
-	for (i = 0; i < digits; ++i)
-		rounding = rounding / 10.0;
-	number = number + rounding;
-
-	//extract the integer part of the number and print it
-	uint64_t int_part = (uint64_t) number;
-	float remainder = (float) (number - (float) int_part);
-	SWV_printnum(int_part); //print the integer part
-	if (digits > 0)
-		ITM_SendChar('.'); //print decimal pint
-	uint32_t toprint;
-	while (digits-- > 0) {
-		remainder = remainder * 10.0;
-		toprint = (uint32_t) remainder;
-		SWV_printnum(toprint);
-		remainder = remainder - toprint;
-	}
-
-}
