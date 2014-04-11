@@ -34,6 +34,7 @@ xQueueHandle msgqRecv1;
 xQueueHandle msgqRecv2;
 xQueueHandle msgqRecv3;
 xQueueHandle msgqRecv4;
+xQueueHandle msgqProcessRFGComm;
 xQueueSetHandle msgqSetProcessPosition;
 /* ----------------------- module procedure declaration ----------------------*/
 void initProcessTask(void);
@@ -69,6 +70,7 @@ void initProcessTask(void) {
 	msgqRecv2 = xQueueCreate( QUEUE_LENGTH_2, ITEM_SIZE_QUEUE_2 );
 	msgqRecv3 = xQueueCreate( QUEUE_LENGTH_3, ITEM_SIZE_QUEUE_3 );
 	msgqRecv4 = xQueueCreate( QUEUE_LENGTH_4, ITEM_SIZE_QUEUE_4 );
+	msgqProcessRFGComm =  xQueueCreate( PROCESSRFCOMM_QUEUE_LENGTH, PROCESSRFCOMM_ITEM_SIZE );
 
 	/* Add the queues to the set */
 	xQueueAddToSet(msgqRecv1, msgqSetProcessPosition);
