@@ -1,29 +1,28 @@
-/******************************************************************************/
-/*! \Trilateration.c
-******************************************************************************
-* \brief Short description of the files function
-*
-*
-* Function : More detailed description of the files function
-*
-* Procedures : 	vDefaultTask(void*)
-* 				InitDefaultTask()
-*              	function3()...
-*
-* \author zursr1,heimg1
-*
-* \version 0.0.1
-*
-* \history 25.03.2014 File Created
-*
-*
-* \ingroup <group name> [<group name 2> <group name 3>]
-*
-* \todo If u have some todo's for the c-file, add it here
-*
-* \bug Description of the bug
-*
-*/
+/**
+ ******************************************************************************
+ * \file	PositionTask.c
+ ******************************************************************************
+ * \brief Short description of the files function
+ *
+ *
+ * Function : More detailed description of the files function
+ *
+ * Procedures : 	vDefaultTask(void*)
+ * 				InitDefaultTask()
+ *              	function3()...
+ *
+ * \author zursr1,heimg1
+ *
+ * \version 0.0.1
+ *
+ * \history 25.03.2014 File Created
+ *
+ *
+ * \ingroup <group name> [<group name 2> <group name 3>]
+ *
+ * \todo If u have some todo's for the c-file, add it here
+ *
+ */
 /* ****************************************************************************/
 /* Ultraschallnavi Eurobot 2014												  */
 /* ****************************************************************************/
@@ -35,21 +34,54 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
 /* application */
 #include "default_task.h"		/* Own header include */
-#include "Position.h"			/* Own header include */
-
+#include "PositionTask.h"			/* Own header include */
+#include "ProcessTask.h"
+#include "GyroTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
-
+xQueueHandle msgqPositionCAN;
 /* ----------------------- module procedure declaration ----------------------*/
 
+void initPositionTask(void);
 void Trilateration2D(int, int, int, int, int, int, int, int, int, Position *);
-
 
 /* ****************************************************************************/
 /* End Header : Trilateration.c												  */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: initPositionTask */
+/******************************************************************************/
+/*! \brief initialise the Position Task
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 10.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+void initPositionTask(void) {
+
+	/* create the task */
+	xTaskCreate(PositionTask, (signed char *) POSITIONTASK_NAME,
+			POSITIONTASK_STACK_SIZE, NULL, POSITIONTASK_PRIORITY, NULL);
+
+	/* create Message Queue UART to Process Task */
+	msgqPositionCAN =
+			xQueueCreate(POSITIONCAN_QUEUE_LENGTH, POSITIONCAN_ITEM_SIZE);
+}
+
+/* ****************************************************************************/
+/* End : initPositionTask */
 /* ****************************************************************************/
 
 //// Eigenimplementation von itoa(int to ascii)
@@ -82,6 +114,33 @@ void Trilateration2D(int, int, int, int, int, int, int, int, int, Position *);
 //    }
 //    Buffer[i] = '\0';
 //}
+/******************************************************************************/
+/* Function: Trilateration2D */
+/******************************************************************************/
+/*! \brief calculates the position of the robot by triangulation
+ *
+ * Function : More detailed description of the function
+ *
+ * \param[in] x1
+ * \param[in] x2
+ * \param[in] x3
+ * \param[in] y1
+ * \param[in] y2
+ * \param[in] y3
+ * \param[in] r1
+ * \param[in] r2
+ * \param[in] r3
+ * \param[in] pos
+ *
+ * \author heimg1
+ *
+ * \version 0.0.1
+ *
+ * \date 10.04.2014 Function created
+ *
+ * \todo Comment parameters better
+ *
+ *******************************************************************************/
 
 void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 		int r2, int r3, Position *pos) {
@@ -90,20 +149,22 @@ void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 	long xn[2][2];
 	long yn[2][2];
 	double d[2][2];
-	double x[2][2] = {{0,0},{0,0}};
-	double y[2][2] = {{0,0},{0,0}};
+	double x[2][2] = { { 0, 0 }, { 0, 0 } };
+	double y[2][2] = { { 0, 0 }, { 0, 0 } };
 	long detd = 0;
 	double tmp = 0;
 
-	xn[0][0] = (int)(pow(r1,2) - pow(r2,2))-(pow(x1,2) - pow(x2,2))-(pow(y1,2) - pow(y2,2));
-	xn[1][0] = (int)(pow(r1,2) - pow(r3,2))-(pow(x1,2) - pow(x3,2))-(pow(y1,2) - pow(y3,2));
-	xn[0][1] = 2*(y2-y1);
-	xn[1][1] = 2*(y3-y1);
+	xn[0][0] = (int) (pow(r1, 2) - pow(r2, 2)) - (pow(x1, 2) - pow(x2, 2))
+			- (pow(y1, 2) - pow(y2, 2));
+	xn[1][0] = (int) (pow(r1, 2) - pow(r3, 2)) - (pow(x1, 2) - pow(x3, 2))
+			- (pow(y1, 2) - pow(y3, 2));
+	xn[0][1] = 2 * (y2 - y1);
+	xn[1][1] = 2 * (y3 - y1);
 
-	d[0][0] = 2*(x2-x1);
-	d[1][0] = 2*(x3-x1);
-	d[0][1] = 2*(y2-y1);
-	d[1][1] = 2*(y3-y1);
+	d[0][0] = 2 * (x2 - x1);
+	d[1][0] = 2 * (x3 - x1);
+	d[0][1] = 2 * (y2 - y1);
+	d[1][1] = 2 * (y3 - y1);
 
 	yn[0][0] = d[0][0];
 	yn[1][0] = d[1][0];
@@ -111,37 +172,37 @@ void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 	yn[1][1] = xn[1][0];
 
 	//Inverse der 2D-Matrix d
-	detd = d[0][0]*d[1][1] - d[0][1]*d[1][0];
+	detd = d[0][0] * d[1][1] - d[0][1] * d[1][0];
 	tmp = d[0][0];
-	d[0][0] = d[1][1]*1/detd;
-	d[1][1] = tmp*1/detd;
-	d[0][1] = -d[0][1]*1/detd;
-	d[1][0] = -d[1][0]*1/detd;
+	d[0][0] = d[1][1] * 1 / detd;
+	d[1][1] = tmp * 1 / detd;
+	d[0][1] = -d[0][1] * 1 / detd;
+	d[1][0] = -d[1][0] * 1 / detd;
 	//Multiplizieren der zwei Matrizen
-   x[0][0] = xn[0][0]*d[0][0]+xn[0][1]*d[1][0];
-   x[0][1] = xn[0][0]*d[0][1]+xn[0][1]*d[1][1];
-   x[1][0] = xn[1][0]*d[0][0]+xn[1][1]*d[1][0];
-   x[1][1] = xn[1][0]*d[0][1]+xn[1][1]*d[1][1];
+	x[0][0] = xn[0][0] * d[0][0] + xn[0][1] * d[1][0];
+	x[0][1] = xn[0][0] * d[0][1] + xn[0][1] * d[1][1];
+	x[1][0] = xn[1][0] * d[0][0] + xn[1][1] * d[1][0];
+	x[1][1] = xn[1][0] * d[0][1] + xn[1][1] * d[1][1];
 	//X-Position ermitteln
-	pos->x = x[0][0]*x[1][1] - x[0][1]*x[1][0];
+	pos->x = x[0][0] * x[1][1] - x[0][1] * x[1][0];
 	//Multiplizieren der zwei Matrizen
-	y[0][0] = yn[0][0]*d[0][0]+yn[0][1]*d[1][0];
-	y[0][1] = yn[0][0]*d[0][1]+yn[0][1]*d[1][1];
-	y[1][0] = yn[1][0]*d[0][0]+yn[1][1]*d[1][0];
-	y[1][1] = yn[1][0]*d[0][1]+yn[1][1]*d[1][1];
+	y[0][0] = yn[0][0] * d[0][0] + yn[0][1] * d[1][0];
+	y[0][1] = yn[0][0] * d[0][1] + yn[0][1] * d[1][1];
+	y[1][0] = yn[1][0] * d[0][0] + yn[1][1] * d[1][0];
+	y[1][1] = yn[1][0] * d[0][1] + yn[1][1] * d[1][1];
 	//Y-Position ermitteln
-	pos->y = y[0][0]*y[1][1] - y[0][1]*y[1][0];
+	pos->y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
 	__enable_irq();
 }
 
 /*******************************************************************************
-* Function Name  : main
-* Description    : Main program
-* Input          : None
-* Output         : None
-* Return         : None
-* Attention		 : None
-*******************************************************************************/
+ * Function Name  : main
+ * Description    : Main program
+ * Input          : None
+ * Output         : None
+ * Return         : None
+ * Attention		 : None
+ *******************************************************************************/
 //int main(void)
 //{
 //
@@ -212,8 +273,6 @@ void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 //	  }
 //  }
 //}
-
-
 /*********************************************************************************************************
-      END FILE
-*********************************************************************************************************/
+ END FILE
+ *********************************************************************************************************/

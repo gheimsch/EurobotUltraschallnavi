@@ -1,10 +1,73 @@
-/* Includes ------------------------------------------------------------------*/
-//#include "stm32f4xx_it.h"
+/**
+ ****************************************************************************
+ * \file	GyroTask.c
+ ******************************************************************************
+ * \brief Short description of the files function
+ *
+ *
+ * Function : More detailed description of the files function
+ *
+ * Procedures : 	vDefaultTask(void*)
+ * 				InitDefaultTask()
+ *              	function3()...
+ *
+ * \author zursr1,heimg1
+ *
+ * \version 0.0.1
+ *
+ * \history 10.04.2014 File Created
+ *
+ *
+ * \ingroup <group name> [<group name 2> <group name 3>]
+ *
+ * \todo If u have some todo's for the c-file, add it here
+ *
+ * \bug Description of the bug
+ *
+ */
+/* ****************************************************************************/
+/* Ultraschallnavi Eurobot 2014												  */
+/* ****************************************************************************/
+
+/* --------------------------------- imports ---------------------------------*/
 
 #include "../lib/I2C.h"		/* Own header include */
 #include "math.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
-/* Private function prototypes -----------------------------------------------*/
+#include "GyroTask.h"
+
+/* ------------------------- module data declaration -------------------------*/
+/* register used to setup the gyro */
+#define CTRL_REG1_G   	0x20
+#define CTRL_REG2_G   	0x21
+#define CTRL_REG3_G   	0x22
+#define CTRL_REG4_G   	0x23
+#define CTRL_REG5_G   	0x24
+#define STATUS_REG1_G   0x27
+
+/* Register to read out data */
+#define OUT_X_L_G   	0xA8
+#define OUT_TEMP_G 		0x26
+
+xQueueHandle msgqGyroPosition;
+
+/* data to config the gyro */
+static uint8_t CTRL_REG1_G_DATA = 0x0F;
+static uint8_t CTRL_REG2_G_DATA = 0x00;
+static uint8_t CTRL_REG3_G_DATA = 0x08;
+static uint8_t CTRL_REG4_G_DATA = 0x00;
+static uint8_t CTRL_REG5_G_DATA = 0x00;
+
+static float gyrScale = 0; // scale of the Gyro set with the sensivity of the devise
+static float gyrOffset = 0;	// measured Offset of the gyro
+static float driftyaw = 0;		// constants to compensate linear drift
+static float yaw = 0;		// measured angle
+
+volatile uint32_t msTicks;	// counts 1ms timeTicks
+
 typedef struct RungeKuta {
 	float fourth_Prev;
 	float third_Prev;
@@ -12,6 +75,11 @@ typedef struct RungeKuta {
 	float Prev;
 } RungeKutta;
 
+RungeKutta RukaRaw_yaw;		// struct to approximate the angle
+
+/* ----------------------- module procedure declaration ----------------------*/
+
+void initGyroTask(void);
 void initGyr(void);
 
 void setGyrSensitivity(uint16_t);
@@ -25,57 +93,38 @@ float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue);
 void incrementTimer(void);
 void Delay(volatile uint32_t nCount);
 
-/* Private functions ---------------------------------------------------------*/
+/* ****************************************************************************/
+/* End Header : GyroTask.c													  */
+/* ****************************************************************************/
 
-/* Exported constants --------------------------------------------------------*/
+/******************************************************************************/
+/* Function: initGyroTask */
+/******************************************************************************/
+/*! \brief initialise the Gyro Task
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 10.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
 
-/* register used to setup the gyro */
-#define CTRL_REG1_G   	0x20
-#define CTRL_REG2_G   	0x21
-#define CTRL_REG3_G   	0x22
-#define CTRL_REG4_G   	0x23
-#define CTRL_REG5_G   	0x24
-#define STATUS_REG1_G   0x27
+void initGyroTask(void) {
 
-/* Register to read out data */
-#define OUT_X_L_G   	0xA8
-#define OUT_TEMP_G 		0x26
+	/* create the task */
+	xTaskCreate(GyroTask, (signed char *) GYROTASK_NAME, GYROTASK_STACK_SIZE,
+			NULL, GYROTASK_PRIORITY, NULL);
 
-/* data to config the gyro */
-uint8_t CTRL_REG1_G_DATA = 0x0F;
-uint8_t CTRL_REG2_G_DATA = 0x00;
-uint8_t CTRL_REG3_G_DATA = 0x08;
-uint8_t CTRL_REG4_G_DATA = 0x00;
-uint8_t CTRL_REG5_G_DATA = 0x00;
-
-float gyrScale = 0;	// scale of the Gyro set with the sensivity of the devise
-float gyrOffset = 0;	// measured Offset of the gyro
-float driftyaw = 0;		// constants to compensate linear drift
-float yaw = 0;		// measured angle
-RungeKutta RukaRaw_yaw;		// struct to approximate the angle
-
-volatile uint32_t msTicks;	// counts 1ms timeTicks
-
-/**
- * @brief	increments msTick every milisecond
- * @param	msTicks
- * @note	called by SysTick_Handler()
- */
-void incrementTimer(void) {
-	msTicks++;
-
+	/* create Message Queue Gyro to Position Task */
+	msgqGyroPosition =
+			xQueueCreate(GYROPOSITION_QUEUE_LENGTH, GYROPOSITION_ITEM_SIZE);
 }
 
-/*
- * Delay a number of cycles
- */
-void Delay(volatile uint32_t nCount) {
-	while (nCount--) {
-		int32_t j;
-		for (j = 0; j < 10000; j++) {
-		};
-	};
-}
+/* ****************************************************************************/
+/* End : initGyroTask */
+/* ****************************************************************************/
 
 /**
  *************************************************************************************
@@ -295,11 +344,13 @@ void calculateAngle(int16_t gyrValue, uint32_t t) {
 		yaw += 360;
 	}
 
-	printf("Z-Achse Gyro: ");
-	SWV_printfloat(yaw, 1);
-	printf("\r\n");
-	printf("\r\n");
-	printf("\r\n");
+	/*
+	 printf("Z-Achse Gyro: ");
+	 SWV_printfloat(yaw, 1);
+	 printf("\r\n");
+	 printf("\r\n");
+	 printf("\r\n");
+	 */
 
 }
 
@@ -328,4 +379,25 @@ float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue) {
 	rk->second_Prev = rk->Prev;
 
 	return rk->Prev;
+}
+
+/**
+ * @brief	increments msTick every milisecond
+ * @param	msTicks
+ * @note	called by SysTick_Handler()
+ */
+void incrementTimer(void) {
+	msTicks++;
+
+}
+
+/*
+ * Delay a number of cycles
+ */
+void Delay(volatile uint32_t nCount) {
+	while (nCount--) {
+		int32_t j;
+		for (j = 0; j < 10000; j++) {
+		};
+	};
 }

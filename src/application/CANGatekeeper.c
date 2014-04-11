@@ -22,6 +22,7 @@
 /* application */
 //#include "app_config.h" /* global application-settings */
 #include "CANGatekeeper.h"
+#include "PositionTask.h"
 
 /* HW-library */
 #include "stm32f4xx_can.h" /* for CAN rx/tx data types */
