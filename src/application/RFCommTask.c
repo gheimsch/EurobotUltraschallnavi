@@ -43,6 +43,7 @@
 #include "PositionTask.h"			/* Own header include */
 #include "RFCommTask.h"				/* Own header include */
 #include "../lib/UART.h"		/* Own header include */
+#include "ProcessTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
 //Receive Buffer
