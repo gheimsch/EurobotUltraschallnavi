@@ -41,7 +41,7 @@
 
 /* Application includes */
 #include "default_task.h"
-#include "Position.h"			/* Own header include */
+#include "PositionTask.h"			/* Own header include */
 #include "GyroTask.h"			/* Own header include */
 #include "CANGatekeeper.h"			/* Own header include */
 #include <stdio.h>
