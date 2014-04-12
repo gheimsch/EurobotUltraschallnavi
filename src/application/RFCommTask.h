@@ -50,7 +50,6 @@ static const unsigned char SyncString[] = "M&q0:20,21,22 s3 $";
 /* ----------------------- module procedure declaration ----------------------*/
 
 extern void initRFCommTask(void);
-extern void RFCommTask(void*);
 extern void getrad(unsigned char *, unsigned char *, unsigned int *);
 extern unsigned short SendRFMsg(const unsigned char *);
 /* ****************************************************************************/

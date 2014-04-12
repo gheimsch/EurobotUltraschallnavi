@@ -60,7 +60,6 @@ extern xQueueHandle msgqProcessRFGComm;
 extern xQueueSetHandle msgqSetProcessPosition;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initProcessTask(void);
-extern void ProcessTask(void*);
 /* ****************************************************************************/
 /* End Header :ProcessTask.h */
 /* ****************************************************************************/

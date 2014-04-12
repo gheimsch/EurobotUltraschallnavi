@@ -40,7 +40,6 @@ extern xSemaphoreHandle semaphoreUART;
 extern xQueueHandle msgqUARTProcess;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initUARTTask(void);
-extern void UARTTask(void*);
 /* ****************************************************************************/
 /* End Header : UARTTask.h */
 /* ****************************************************************************/

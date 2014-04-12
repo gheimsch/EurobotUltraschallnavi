@@ -38,6 +38,7 @@ xQueueHandle msgqProcessRFGComm;
 xQueueSetHandle msgqSetProcessPosition;
 /* ----------------------- module procedure declaration ----------------------*/
 void initProcessTask(void);
+static void ProcessTask(void* pvParameters);
 /* ****************************************************************************/
 /* End Header : ProcessTask.c */
 /* ****************************************************************************/
@@ -84,3 +85,32 @@ void initProcessTask(void) {
 /* End : initProcessTask */
 /* ****************************************************************************/
 
+/******************************************************************************/
+/* Function: ProcessTask */
+/******************************************************************************/
+/*! \brief Process Task
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void ProcessTask(void* pvParameters) {
+
+	//init values
+
+	/* for ever */
+	for (;;) {
+
+
+
+	}
+}
+
+/* ****************************************************************************/
+/* End : ProcessTask */
+/* ****************************************************************************/

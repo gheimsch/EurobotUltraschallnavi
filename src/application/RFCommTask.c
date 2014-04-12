@@ -56,6 +56,7 @@ volatile unsigned char i = 0;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initRFCommTask(void);
+static void RFCommTask(void* pvParameters);
 void getrad(unsigned char *, unsigned char *, unsigned int *);
 unsigned short SendRFMsg(const unsigned char *);
 void USARTPrint(const unsigned char *, unsigned char);
@@ -88,6 +89,35 @@ void initRFCommTask(void) {
 
 /* ****************************************************************************/
 /* End : initRFCommTask */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: RFCommTask */
+/******************************************************************************/
+/*! \brief RFComm Task
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void RFCommTask(void* pvParameters) {
+
+	//init values
+
+	/* for ever */
+	for (;;) {
+
+
+	}
+}
+
+/* ****************************************************************************/
+/* End : RFCommTask */
 /* ****************************************************************************/
 
 //USART RX IRQ Handler
