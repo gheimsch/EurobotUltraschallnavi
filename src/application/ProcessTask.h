@@ -37,11 +37,13 @@
 #define QUEUE_LENGTH_2		( 256 )		/*!< Length of the Queue Receiver 2 */
 #define QUEUE_LENGTH_3		( 256 )		/*!< Length of the Queue Receiver 3 */
 #define QUEUE_LENGTH_4		( 256 )		/*!< Length of the Queue Receiver 4 */
+#define PROCESSRFCOMM_QUEUE_LENGTH		( 256 )		/*!< Length of the Queue Process to RFComm */
 
 #define ITEM_SIZE_QUEUE_1	( sizeof(long) )	/*!< Item size of the Elements in the Message Queue */
 #define ITEM_SIZE_QUEUE_2	( sizeof(long) )	/*!< Item size of the Elements in the Message Queue */
 #define ITEM_SIZE_QUEUE_3	( sizeof(long) )	/*!< Item size of the Elements in the Message Queue */
 #define ITEM_SIZE_QUEUE_4	( sizeof(long) )	/*!< Item size of the Elements in the Message Queue */
+#define PROCESSRFCOMM_ITEM_SIZE	( sizeof(long) )	/*!< Item size of the Elements in the Message Queue */
 
 #define COMBINED_LENGTH		( QUEUE_LENGTH_1 + QUEUE_LENGTH_2 + QUEUE_LENGTH_3 + QUEUE_LENGTH_4 )	/*!< Length of the combined Queues in the QueueSet */
 
@@ -54,10 +56,10 @@ extern xQueueHandle msgqRecv1;
 extern xQueueHandle msgqRecv2;
 extern xQueueHandle msgqRecv3;
 extern xQueueHandle msgqRecv4;
+extern xQueueHandle msgqProcessRFGComm;
 extern xQueueSetHandle msgqSetProcessPosition;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initProcessTask(void);
-extern void ProcessTask(void*);
 /* ****************************************************************************/
 /* End Header :ProcessTask.h */
 /* ****************************************************************************/

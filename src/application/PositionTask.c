@@ -35,8 +35,8 @@
 #include <string.h>
 #include <math.h>
 #include "FreeRTOS.h"
-#include "task.h"
 #include "queue.h"
+#include "task.h"
 
 /* application */
 #include "default_task.h"		/* Own header include */
@@ -50,6 +50,7 @@ xQueueHandle msgqPositionCAN;
 
 void initPositionTask(void);
 void Trilateration2D(int, int, int, int, int, int, int, int, int, Position *);
+static void PositionTask(void* pvParameters);
 
 /* ****************************************************************************/
 /* End Header : Trilateration.c												  */
@@ -75,7 +76,7 @@ void initPositionTask(void) {
 	xTaskCreate(PositionTask, (signed char *) POSITIONTASK_NAME,
 			POSITIONTASK_STACK_SIZE, NULL, POSITIONTASK_PRIORITY, NULL);
 
-	/* create Message Queue UART to Process Task */
+	/* create Message Queue Position to CAN Task */
 	msgqPositionCAN =
 			xQueueCreate(POSITIONCAN_QUEUE_LENGTH, POSITIONCAN_ITEM_SIZE);
 }
@@ -194,6 +195,45 @@ void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 	pos->y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
 	__enable_irq();
 }
+/******************************************************************************/
+/* End: Trilateration2D */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Function: PositionTask */
+/******************************************************************************/
+/*! \brief Position Task calculates the positions and reads out the angle to
+ * 		   send the data to the CAN gatekeeper
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 11.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void PositionTask(void* pvParameters) {
+
+	//initialise stuff
+
+	float angle = 0;
+
+	/* for ever */
+	for (;;) {
+
+
+		angle = yaw;
+
+		//SWV_printfloat(yaw, 4);
+		vTaskDelay(100 / portTICK_RATE_MS);
+	}
+}
+
+/* ****************************************************************************/
+/* End : GyroTask */
+/* ****************************************************************************/
 
 /*******************************************************************************
  * Function Name  : main

@@ -53,7 +53,6 @@ Position Enemy1Pos;
 Position Enemy2Pos;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initPositionTask(void);
-extern void PositionTask(void*);
 extern void initRFComm(void);
 extern void Trilateration2D(int, int, int, int, int, int, int, int, int,
 		Position *);

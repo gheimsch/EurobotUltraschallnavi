@@ -33,19 +33,15 @@
 
 /* ----------------------- module constant declaration -----------------------*/
 #define GYROTASK_NAME			"Gyro Task"					/*!< Detailed description after the member */
-#define GYROTASK_STACK_SIZE		configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
+#define GYROTASK_STACK_SIZE		( configMINIMAL_STACK_SIZE ) 		/*!< size of the receive and transmit task */
 #define GYROTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
 
-#define GYROPOSITION_QUEUE_LENGTH	( 1 ) 				/*!< Length of the Message Queue */
-#define GYROPOSITION_ITEM_SIZE		( sizeof(long) ) 	/*!< Item size of the Elements in the Message Queue */
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
-
+extern float yaw;		// measured angle
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initGyroTask(void);
-extern void GyroTask(void*);
-extern xQueueHandle msgqGyroPosition;
 extern void initGyr(void);
 extern void setGyrSensitivity(uint16_t);
 extern void calculateGyroOffsets(void);
