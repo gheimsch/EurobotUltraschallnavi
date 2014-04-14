@@ -35,30 +35,19 @@
 #define POSITIONCAN_QUEUE_LENGTH	( 3 ) 				/*!< Length of the Message Queue */
 #define POSITIONCAN_ITEM_SIZE		( sizeof(long) ) 	/*!< Item size of the Elements in the Message Queue */
 /* ------------------------- module type declaration -------------------------*/
-//Robo Position struct
-typedef struct Position {
-	unsigned int x;
-	unsigned int y;
-	unsigned int r1;
-	unsigned int r2;
-	unsigned int r3;
-} Position;
 
 /* ------------------------- module data declaration -------------------------*/
 extern xQueueHandle msgqPositionCAN;
 
-Position Robo1Pos;
-Position Robo2Pos;
-Position Enemy1Pos;
-Position Enemy2Pos;
+enum color {
+	red = 1, yellow = 1
+};
+
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initPositionTask(void);
 extern void initRFComm(void);
-extern void Trilateration2D(int, int, int, int, int, int, int, int, int,
-		Position *);
 
 /* ****************************************************************************/
 /* End Header : PositionTask.h												  */
 /* ****************************************************************************/
 #endif /* __APP_POSITIONTASK_H_ */
-

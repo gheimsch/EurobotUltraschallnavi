@@ -43,9 +43,16 @@
 #include "PositionTask.h"			/* Own header include */
 #include "ProcessTask.h"
 #include "GyroTask.h"
+#include "CANGatekeeper.h"
 
 /* ------------------------- module data declaration -------------------------*/
 xQueueHandle msgqPositionCAN;
+xQueueSetMemberHandle xActivatedMember;
+
+Position Robo1;
+Position Robo2;
+Position Enemy1;
+Position Enemy2;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
@@ -146,7 +153,6 @@ void initPositionTask(void) {
 void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 		int r2, int r3, Position *pos) {
 
-	__disable_irq();
 	long xn[2][2];
 	long yn[2][2];
 	double d[2][2];
@@ -193,7 +199,6 @@ void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
 	y[1][1] = yn[1][0] * d[0][1] + yn[1][1] * d[1][1];
 	//Y-Position ermitteln
 	pos->y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
-	__enable_irq();
 }
 /******************************************************************************/
 /* End: Trilateration2D */
@@ -218,21 +223,179 @@ static void PositionTask(void* pvParameters) {
 
 	//initialise stuff
 
-	float angle = 0;
+	int team = 0;
 
 	/* for ever */
 	for (;;) {
 
+		xActivatedMember = xQueueSelectFromSet(msgqSetProcessPosition,
+				10 / portTICK_RATE_MS);
 
-		angle = yaw;
+		// define the teamcolor in CANGatekeeper...
+		team = red;
 
-		//SWV_printfloat(yaw, 4);
+		if (xActivatedMember == msgqRobo1) {
+
+			// get the distances
+			xQueueReceive( xActivatedMember, &Robo1, 0);
+
+			// calculate the position
+			if (team == red) {
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo1.r1,
+						Robo1.r2, Robo1.r3, &Robo1);
+			}
+			if (team == yellow) {
+				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Robo1.r1,
+						Robo1.r2, Robo1.r3, &Robo1);
+			}
+			Robo1.angle = yaw;
+
+		}
+		if (xActivatedMember == msgqRobo2) {
+			xQueueReceive( xActivatedMember, &Robo2, 0);
+
+			// calculate the position
+			if (team == red) {
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo2.r1,
+						Robo2.r2, Robo2.r3, &Robo2);
+			}
+			if (team == yellow) {
+				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Robo2.r1,
+						Robo2.r2, Robo2.r3, &Robo2);
+			}
+
+		}
+		if (xActivatedMember == msgqEnemy1) {
+			xQueueReceive( xActivatedMember, &Enemy1, 0);
+
+			// calculate the position
+			if (team == red) {
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy1.r1,
+						Enemy1.r2, Enemy1.r3, &Enemy1);
+			}
+			if (team == yellow) {
+				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy1.r1,
+						Enemy1.r2, Enemy1.r3, &Enemy1);
+			}
+
+		}
+
+		if (xActivatedMember == msgqEnemy1) {
+			xQueueReceive( xActivatedMember, &Enemy2, 0);
+
+			// calculate the position
+			if (team == red) {
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy2.r1,
+						Enemy2.r2, Enemy2.r3, &Enemy2);
+			}
+			if (team == yellow) {
+				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy2.r1,
+						Enemy2.r2, Enemy2.r3, &Enemy2);
+			}
+
+		}
+
 		vTaskDelay(100 / portTICK_RATE_MS);
 	}
 }
+/* ****************************************************************************/
+/* End : PositionTask */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: posRobo1Request */
+/******************************************************************************/
+/*! \brief sends the Position of the own Robot via CAN
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 14.04.2014 Function created
+ *
+ * \todo ID
+ *
+ *
+ *******************************************************************************/
+
+void posRobo1Request(void){
+	txNaviPositionResponse(Robo1.x,Robo1.y,Robo1.angle,0 /* (ID) */);
+}
 
 /* ****************************************************************************/
-/* End : GyroTask */
+/* End : posRobo1Request */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: posRobo2Request */
+/******************************************************************************/
+/*! \brief sends the Position of the confederated Robot via CAN
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 14.04.2014 Function created
+ *
+ * \todo ID
+ *
+ *
+ *******************************************************************************/
+
+void posRobo2Request(void){
+	txNaviPositionResponse(Robo2.x,Robo2.y,0,0 /* (ID) */);
+}
+
+/* ****************************************************************************/
+/* End : posRobo2Request */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: posEnemy1Request */
+/******************************************************************************/
+/*! \brief sends the Position of first Enemyrobot via CAN
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 14.04.2014 Function created
+ *
+ * \todo ID
+ *
+ *
+ *******************************************************************************/
+
+void posEnemy1Request(void){
+	txNaviPositionResponse(Enemy1.x,Enemy1.y,0,0 /* (ID) */);
+}
+
+/* ****************************************************************************/
+/* End : posEnemy1Request */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: posEnemy2Request */
+/******************************************************************************/
+/*! \brief sends the Position of the second Enemyrobot via CAN
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 14.04.2014 Function created
+ *
+ * \todo ID
+ *
+ *
+ *******************************************************************************/
+
+void posEnemy2Request(void){
+	txNaviPositionResponse(Enemy2.x,Enemy2.y,0,0 /* (ID) */);
+}
+
+/* ****************************************************************************/
+/* End : posEnemy2Request */
 /* ****************************************************************************/
 
 /*******************************************************************************
@@ -241,7 +404,7 @@ static void PositionTask(void* pvParameters) {
  * Input          : None
  * Output         : None
  * Return         : None
- * Attention		 : None
+ * Attention	  : None
  *******************************************************************************/
 //int main(void)
 //{

@@ -46,22 +46,14 @@
 #include "ProcessTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
-//Receive Buffer
-volatile char RxMsg[BUFFERSIZE];
-//Messagefilter
-unsigned char Filterstr[9];
-unsigned char stringout[15];
-volatile unsigned char i = 0;
 
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initRFCommTask(void);
 static void RFCommTask(void* pvParameters);
-void getrad(unsigned char *, unsigned char *, unsigned int *);
 unsigned short SendRFMsg(const unsigned char *);
 void USARTPrint(const unsigned char *, unsigned char);
-void Delay_ms(unsigned int);
-
+volatile unsigned char i = 0;
 /* ****************************************************************************/
 /* End Header : GyroTask.c													  */
 /* ****************************************************************************/
@@ -121,7 +113,7 @@ static void RFCommTask(void* pvParameters) {
 /* ****************************************************************************/
 
 //USART RX IRQ Handler
-void USART1_IRQHandler(void) {
+/*void USART1_IRQHandler(void) {
 	__disable_irq(); // kein disable nötig Vorsicht, allfällig critical section beim Auslesen (grosi)
 
 	if (USART_GetITStatus(USART1, USART_IT_RXNE ) != RESET) {
@@ -135,55 +127,10 @@ void USART1_IRQHandler(void) {
 		}
 	}
 	__enable_irq();
-}
+}*/
 
-void Delay_ms(unsigned int ms) {
 
-	int tms;
-	tms = 5000 * ms;
-	while (tms--)
-		;
-}
 
-//Entfernung von Tag zu Receiver auslesen
-void getrad(unsigned char *RecID, unsigned char *TagID, unsigned int * rad) {
-
-	volatile unsigned char i = 0;
-	unsigned char value[4] = { 0, 0, 0, 0 };
-	unsigned int valueret = 0;
-	unsigned char Msgpos;
-	//Filterstring zusammensetzten
-	strcpy(Filterstr, RecID);
-	strcat(Filterstr, " ");
-	strcat(Filterstr, TagID);
-	strcat(Filterstr, " ");
-	strcat(Filterstr, "A");
-
-	//Prüfen ob Filterstring im Buffer enthalten ist
-	if (strstr(RxMsg, Filterstr) != NULL ) {
-		//Position des Strings der Distanz rechnen
-		Msgpos = ((unsigned char) (strstr(RxMsg, Filterstr) - RxMsg))
-				+ sizeof(Filterstr);
-		Delay_ms(1);
-		//Solange kein Leerzeichen oder der Buffer fertig ist
-		while ((RxMsg[Msgpos] != ' ') || (Msgpos <= (BUFFERSIZE - 1))) {
-			if ((i > 3) || Msgpos > (BUFFERSIZE - 4)) {
-				//Bei mehr als drei Zeichen abbrechen
-				break;
-			}
-			value[i] = RxMsg[Msgpos + i];
-			i++;
-		}
-	}
-	//Filterstring zurücksetzten
-	memset(&Filterstr, 0, sizeof(Filterstr));
-	//Integer Wert der Distanz zurückgeben
-	valueret = atoi(value);
-	if ((valueret > 10) && (valueret < 3700)) {
-		*rad = valueret;
-	}
-
-}
 
 void USARTPrint(const unsigned char *ToSend, unsigned char length) {
 	unsigned int i;
@@ -196,7 +143,7 @@ void USARTPrint(const unsigned char *ToSend, unsigned char length) {
 		}
 	}
 }
-
+/*
 unsigned short SendRFMsg(const unsigned char *str) {
 	unsigned char len = 0, i = 0, j = 0;
 	unsigned int check = 0;
@@ -231,3 +178,4 @@ unsigned short SendRFMsg(const unsigned char *str) {
 		return 1;
 	}
 }
+*/
