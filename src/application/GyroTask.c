@@ -120,7 +120,7 @@ void initGyroTask(void) {
 	/* initialise the I2C-Interface to the Gyro */
 	initI2C();
 
-	/* initialise the Gyro */
+	/* TODO initialise when start received */
 	initGyr();
 
 }

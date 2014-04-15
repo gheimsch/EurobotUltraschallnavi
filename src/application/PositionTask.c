@@ -58,8 +58,8 @@ uint8_t team = tbd;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
-void Trilateration2D(uint16_t x1, uint16_t x2, uint16_t x3, uint16_t y1,
-		uint16_t y2, uint16_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
+void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1,
+		int32_t y2, int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
 		Position * pos);
 static void PositionTask(void* pvParameters);
 void posRobo1Request(uint16_t id, CAN_data_t* data);
@@ -167,8 +167,8 @@ void initPositionTask(void) {
  *
  *******************************************************************************/
 
-void Trilateration2D(uint16_t x1, uint16_t x2, uint16_t x3, uint16_t y1,
-		uint16_t y2, uint16_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
+void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1,
+		int32_t y2, int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
 		Position * pos) {
 
 	int32_t xn[2][2];
@@ -241,7 +241,7 @@ static void PositionTask(void* pvParameters) {
 
 	//initialise stuff
 
-	team = tbd;
+	team = yellow;
 
 	/* for ever */
 	for (;;) {

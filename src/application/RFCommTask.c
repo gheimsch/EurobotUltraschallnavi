@@ -112,17 +112,19 @@ static void RFCommTask(void* pvParameters) {
 /* End : RFCommTask */
 /* ****************************************************************************/
 
-void USARTPrint(const unsigned char *ToSend, unsigned char length) {
-	unsigned int i;
 
-	/* Output a message  */
-	for (i = 0; i < length; i++) {
-		USART_SendData(USART1, (uint16_t) *ToSend++);
-		/* Loop until the end of transmission */
-		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
-		}
-	}
-}
+//void USARTPrint(const unsigned char *ToSend, unsigned char length) {
+//	unsigned int i;
+//
+//	/* Output a message  */
+//	for (i = 0; i < length; i++) {
+//		USART_SendData(USART1, (uint16_t) *ToSend++);
+//		/* Loop until the end of transmission */
+//		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
+//		}
+//	}
+//}
+
 /*
 unsigned short SendRFMsg(const unsigned char *str) {
 	unsigned char len = 0, i = 0, j = 0;

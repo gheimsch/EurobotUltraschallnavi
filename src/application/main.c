@@ -45,12 +45,13 @@
 #include "GyroTask.h"			/* Own header include */
 #include "CANGatekeeper.h"			/* Own header include */
 #include "SyncTask.h"
+#include "UARTPeripherial.h"
+#include "ProcessTask.h"
 
 #include <stdio.h>
 
 /* lib includes */
 #include "../lib/can.h"		/* Own header include */
-#include "../lib/UART.h"	/* Own header include */
 #include "../lib/I2C.h"		/* Own header include */
 
 /* ------------------------- module data declaration -------------------------*/
@@ -87,12 +88,10 @@ int main(void) {
 
     /* lib initializations */
 
-
-     // initialise UART
-
-    //initPositionTask();
 	initGyroTask();
-
+	initUARTPeripherial();
+	initProcessTask();
+	initPositionTask();
     USART_SendData(USART1,'A');
 
     /* Application initializations */

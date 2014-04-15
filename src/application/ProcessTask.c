@@ -31,7 +31,7 @@
 #include "queue.h"
 
 #include "ProcessTask.h"
-#include "UARTTask.h"
+#include "UARTPeripherial.h"
 #include "RFCommTask.h"
 #include "configNavi.h"
 /* ------------------------- module data declaration -------------------------*/
@@ -63,7 +63,7 @@ static char Receiver2[] = "R41";
 static char Receiver3[] = "R42";
 static char Receiver4[] = "R43";
 
-char UARTMsg[BUFFERSIZE];	//Receive Buffer
+char UARTMsg[UARTBUFFERSIZE];	//Receive Buffer
 
 uint8_t nbrEnemys = 0;
 uint8_t nbrConfederate = 0;
@@ -157,8 +157,8 @@ void getrad(char *RecID, char *TagID, unsigned int *rad ) {
 				+ sizeof(Filterstr);
 
 		//Solange kein Leerzeichen oder der Buffer fertig ist
-		while ((UARTMsg[Msgpos] != ' ') || (Msgpos <= (BUFFERSIZE - 1))) {
-			if ((i > 3) || Msgpos > (BUFFERSIZE - 4)) {
+		while ((UARTMsg[Msgpos] != ' ') || (Msgpos <= (UARTBUFFERSIZE - 1))) {
+			if ((i > 3) || Msgpos > (UARTBUFFERSIZE - 4)) {
 				//Bei mehr als drei Zeichen abbrechen
 				break;
 			}

@@ -1,8 +1,8 @@
-#ifndef UARTTASK_H_
-#define UARTTASK_H_
+#ifndef UARTPERIPHERAL_H_
+#define UARTPERIPHERAL_H_
 
 /******************************************************************************/
-/*! \file UARTTask.h
+/*! \file UARTPeripherial.h
  ******************************************************************************
  * \brief Short description of the files function
  *
@@ -25,23 +25,23 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-#include "semphr.h"
 /* ----------------------- module constant declaration -----------------------*/
 #define UARTTASK_NAME			"UART Task"						/*!< Detailed description after the member */
 #define UARTTASK_STACK_SIZE		configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
 #define UARTTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
 
-#define UARTPROCESS_QUEUE_LENGTH	( 3 ) 			/*!< Length of the Message Queue */
-#define UARTPROCESS_ITEM_SIZE		( sizeof(long) ) 	/*!< Item size of the Elements in the Message Queue */
+#define UARTBUFFERSIZE				15							/*!< size of the UART Buffer */
+
+#define UARTPROCESS_QUEUE_LENGTH	( 10 ) 			/*!< Length of the Message Queue */
+#define UARTPROCESS_ITEM_SIZE		( UARTBUFFERSIZE ) 	/*!< Item size of the Elements in the Message Queue */
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
-extern xSemaphoreHandle semaphoreUART;
 extern xQueueHandle msgqUARTProcess;
 /* ----------------------- module procedure declaration ----------------------*/
-extern void initUARTTask(void);
+extern void initUARTPeripherial(void);
 /* ****************************************************************************/
-/* End Header : UARTTask.h */
+/* End Header : UARTPeripherial.h */
 /* ****************************************************************************/
 
-#endif /* UARTTASK_H_ */
+#endif /* UARTPERIPHERAL_H_ */

@@ -29,7 +29,7 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-#define PROCESSTASK_NAME			"Gyro Task"					/*!< Detailed description after the member */
+#define PROCESSTASK_NAME			"Process Task"					/*!< Detailed description after the member */
 #define PROCESSTASK_STACK_SIZE		configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
 #define PROCESSTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
 
@@ -46,8 +46,6 @@
 #define PROCESSRFCOMM_ITEM_SIZE	( sizeof(Position) )	/*!< Item size of the Elements in the Message Queue */
 
 #define COMBINED_LENGTH		( QUEUE_LENGTH_1 + QUEUE_LENGTH_2 + QUEUE_LENGTH_3 + QUEUE_LENGTH_4 )	/*!< Length of the combined Queues in the QueueSet */
-
-#define BUFFERSIZE ( 50 )
 /* ----------------------- module constant declaration -----------------------*/
 
 /* ------------------------- module type declaration -------------------------*/

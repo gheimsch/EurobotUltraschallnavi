@@ -37,12 +37,12 @@
 #define X_TAG22_RED			( 0 )
 #define Y_TAG22_RED			( 0 )
 
-#define X_TAG20_YELLOW		( 0 )
+#define X_TAG20_YELLOW		( -60 )
 #define Y_TAG20_YELLOW		( 1000 )
-#define X_TAG21_YELLOW		( 3000 )
-#define Y_TAG21_YELLOW		( 0 )
-#define X_TAG22_YELLOW		( 3000 )
-#define Y_TAG22_YELLOW		( 2000 )
+#define X_TAG21_YELLOW		( 3060 )
+#define Y_TAG21_YELLOW		( -60 )
+#define X_TAG22_YELLOW		( 3060 )
+#define Y_TAG22_YELLOW		( 2060 )
 /* ----------------------- module constant declaration -----------------------*/
 
 /* ------------------------- module type declaration -------------------------*/

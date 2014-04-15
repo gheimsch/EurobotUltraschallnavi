@@ -20,20 +20,17 @@
 
 /* --------------------------------- imports ---------------------------------*/
 #include "FreeRTOS.h"
-#include "task.h"
-#include "semphr.h"
 #include "queue.h"
 
-#include "UARTTask.h"
+#include "UARTPeripherial.h"
 #include <string.h>
+#include "../lib/UART.h"	/* Own header include */
 /* ------------------------- module data declaration -------------------------*/
-xSemaphoreHandle semaphoreUART;
 xQueueHandle msgqUARTProcess;
-char RxMsg[15];
+char RxMsg[UARTBUFFERSIZE];
 unsigned char ctr = 0;
 /* ----------------------- module procedure declaration ----------------------*/
-void initUARTTask(void);
-static void UARTTask(void* pvParameters);
+void initUARTPeripherial(void);
 /* ****************************************************************************/
 /* End Header : UARTTask.c */
 /* ****************************************************************************/
@@ -52,7 +49,7 @@ static void UARTTask(void* pvParameters);
  *
  *******************************************************************************/
 
-void initUARTTask(void) {
+void initUARTPeripherial(void) {
 
 	/* initialise the UART-Interface*/
 	initUART();
