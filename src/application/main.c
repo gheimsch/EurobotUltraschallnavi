@@ -44,6 +44,8 @@
 #include "PositionTask.h"			/* Own header include */
 #include "GyroTask.h"			/* Own header include */
 #include "CANGatekeeper.h"			/* Own header include */
+#include "SyncTask.h"
+
 #include <stdio.h>
 
 /* lib includes */
@@ -59,9 +61,6 @@
 /* End Header : main.c														  */
 /* ****************************************************************************/
 
-void posRequest(uint16_t id, CAN_data_t* data){
-	txNaviPositionResponse(300,300,45,0);
-}
 /******************************************************************************/
 /* Function:  main															  */
 /******************************************************************************/

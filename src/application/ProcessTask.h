@@ -68,6 +68,8 @@ extern xQueueHandle msgqEnemy2;
 extern xQueueHandle msgqProcessRFGComm;
 extern xQueueSetHandle msgqSetProcessPosition;
 
+extern uint8_t nbrEnemys;
+extern uint8_t nbrConfederate;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initProcessTask(void);
 /* ****************************************************************************/

@@ -44,15 +44,17 @@
 #include "ProcessTask.h"
 #include "GyroTask.h"
 #include "CANGatekeeper.h"
+#include "configNavi.h"
 
 /* ------------------------- module data declaration -------------------------*/
-xQueueHandle msgqPositionCAN;
 xQueueSetMemberHandle xActivatedMember;
 
 Position Robo1;
 Position Robo2;
 Position Enemy1;
 Position Enemy2;
+
+uint8_t team = tbd;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
@@ -89,17 +91,16 @@ void initPositionTask(void) {
 	xTaskCreate(PositionTask, (signed char *) POSITIONTASK_NAME,
 			POSITIONTASK_STACK_SIZE, NULL, POSITIONTASK_PRIORITY, NULL);
 
-	/* create Message Queue Position to CAN Task */
-	msgqPositionCAN =
-			xQueueCreate(POSITIONCAN_QUEUE_LENGTH, POSITIONCAN_ITEM_SIZE);
-
 	/* set the Position Request Listener for the own Robot */
 	setFunctionCANListener(posRobo1Request, NAVI_POSITION_REQUEST);
 
+	/* set the Position Request Listener for the confederated Robot */
 	setFunctionCANListener(posRobo2Request, CONFEDERATE_POSITION_REQUEST);
 
+	/* set the Position Request Listener for the first Enemy Robot */
 	setFunctionCANListener(posEnemy1Request, ENEMEY_1_POSITION_REQUEST);
 
+	/* set the Position Request Listener for the second Enemy Robot */
 	setFunctionCANListener(posEnemy2Request, ENEMEY_2_POSITION_REQUEST);
 
 }
@@ -240,16 +241,13 @@ static void PositionTask(void* pvParameters) {
 
 	//initialise stuff
 
-	uint8_t team = tbd;
+	team = tbd;
 
 	/* for ever */
 	for (;;) {
 
 		xActivatedMember = xQueueSelectFromSet(msgqSetProcessPosition,
-				10 / portTICK_RATE_MS);
-
-		// define the teamcolor in CANGatekeeper...
-		team = red;
+				portMAX_DELAY);
 
 		if (xActivatedMember == msgqRobo1) {
 
@@ -298,7 +296,6 @@ static void PositionTask(void* pvParameters) {
 				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy1.r1,
 						Enemy1.r2, Enemy1.r3, &Enemy1);
 			}
-
 		}
 
 		if (xActivatedMember == msgqEnemy2) {
@@ -315,10 +312,7 @@ static void PositionTask(void* pvParameters) {
 				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy2.r1,
 						Enemy2.r2, Enemy2.r3, &Enemy2);
 			}
-
 		}
-
-		vTaskDelay(100 / portTICK_RATE_MS);
 	}
 }
 /* ****************************************************************************/

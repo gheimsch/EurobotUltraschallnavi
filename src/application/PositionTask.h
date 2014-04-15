@@ -35,13 +35,11 @@
 #define POSITIONCAN_QUEUE_LENGTH	( 3 ) 				/*!< Length of the Message Queue */
 #define POSITIONCAN_ITEM_SIZE		( sizeof(long) ) 	/*!< Item size of the Elements in the Message Queue */
 /* ------------------------- module type declaration -------------------------*/
-
-/* ------------------------- module data declaration -------------------------*/
-extern xQueueHandle msgqPositionCAN;
-
 enum color {
-	red = 0, yellow = 1, tbd  = 2
+	yellow = 0, red = 1, tbd  = 2
 };
+/* ------------------------- module data declaration -------------------------*/
+extern uint8_t team;
 
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initPositionTask(void);

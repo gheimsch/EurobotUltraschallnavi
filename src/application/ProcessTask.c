@@ -33,6 +33,7 @@
 #include "ProcessTask.h"
 #include "UARTTask.h"
 #include "RFCommTask.h"
+#include "configNavi.h"
 /* ------------------------- module data declaration -------------------------*/
 xQueueHandle msgqRobo1;
 xQueueHandle msgqRobo2;
@@ -50,12 +51,22 @@ Position Enemy2Pos;
 static char Tag1[] = "P20";
 static char Tag2[] = "P21";
 static char Tag3[] = "P22";
+
+#ifndef SET_ROBO_BIG	// if the small Robot is activated
+static char Receiver1[] = "R41";
+static char Receiver2[] = "R40";
+#else	//if the big robot is activated
 static char Receiver1[] = "R40";
 static char Receiver2[] = "R41";
+
+#endif
 static char Receiver3[] = "R42";
 static char Receiver4[] = "R43";
 
 char UARTMsg[BUFFERSIZE];	//Receive Buffer
+
+uint8_t nbrEnemys = 0;
+uint8_t nbrConfederate = 0;
 
 /* ----------------------- module procedure declaration ----------------------*/
 void initProcessTask(void);
@@ -219,7 +230,7 @@ static void ProcessTask(void* pvParameters) {
 
 		}
 		// send measured Distances of Robo2 to the Position Task
-		if ((Robo2Pos.r1 != 0) && (Robo2Pos.r2 != 0) && (Robo2Pos.r3 != 0)) {
+		if ((Robo2Pos.r1 != 0) && (Robo2Pos.r2 != 0) && (Robo2Pos.r3 != 0) && (nbrConfederate == 1)) {
 
 			xQueueSend(msgqRobo2, &Robo2Pos, 0);
 
@@ -230,7 +241,7 @@ static void ProcessTask(void* pvParameters) {
 
 		}
 		// send measured Distances of Enemy1 to the Position Task
-		if ((Enemy1Pos.r1 != 0) && (Enemy1Pos.r2 != 0) && (Enemy1Pos.r3 != 0) /*&& einer od zwei Gegner Roboter*/) {
+		if ((Enemy1Pos.r1 != 0) && (Enemy1Pos.r2 != 0) && (Enemy1Pos.r3 != 0) && (nbrEnemys >= 1)) {
 
 			xQueueSend(msgqEnemy1, &Enemy1Pos, 0);
 
@@ -241,7 +252,7 @@ static void ProcessTask(void* pvParameters) {
 
 		}
 		// send measured Distances of Enemy2 to the Position Task
-		if ((Enemy2Pos.r1 != 0) && (Enemy2Pos.r2 != 0) && (Enemy2Pos.r3 != 0) /*&& zwei Gegner Roboter*/) {
+		if ((Enemy2Pos.r1 != 0) && (Enemy2Pos.r2 != 0) && (Enemy2Pos.r3 != 0) && (nbrEnemys == 2)) {
 
 			xQueueSend(msgqEnemy2, &Enemy2Pos, 0);
 
