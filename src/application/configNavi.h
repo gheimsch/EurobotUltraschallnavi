@@ -23,11 +23,26 @@
 #define SET_ROBO_BIG
 
 #ifndef SET_ROBO_BIG
-//small robot
+// small robot
 #define ROBO_BIG 	( 0 )
+// big robot
 #else
 #define ROBO_BIG 	( 1 )
 #endif
+
+#define X_TAG20_RED			( 3000 )
+#define Y_TAG20_RED			( 1000 )
+#define X_TAG21_RED			( 0 )
+#define Y_TAG21_RED			( 2000 )
+#define X_TAG22_RED			( 0 )
+#define Y_TAG22_RED			( 0 )
+
+#define X_TAG20_YELLOW		( 0 )
+#define Y_TAG20_YELLOW		( 1000 )
+#define X_TAG21_YELLOW		( 3000 )
+#define Y_TAG21_YELLOW		( 0 )
+#define X_TAG22_YELLOW		( 3000 )
+#define Y_TAG22_YELLOW		( 2000 )
 /* ----------------------- module constant declaration -----------------------*/
 
 /* ------------------------- module type declaration -------------------------*/

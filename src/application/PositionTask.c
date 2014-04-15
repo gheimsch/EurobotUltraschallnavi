@@ -256,12 +256,14 @@ static void PositionTask(void* pvParameters) {
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo1.r1, Robo1.r2,
-						Robo1.r3, &Robo1);
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo1.r1,
+						Robo1.r2, Robo1.r3, &Robo1);
 			}
 			if (team == yellow) {
-				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Robo1.r1,
-						Robo1.r2, Robo1.r3, &Robo1);
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Robo1.r1, Robo1.r2, Robo1.r3, &Robo1);
 			}
 			Robo1.angle = yaw;
 
@@ -273,12 +275,14 @@ static void PositionTask(void* pvParameters) {
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo2.r1, Robo2.r2,
-						Robo2.r3, &Robo2);
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo2.r1,
+						Robo2.r2, Robo2.r3, &Robo2);
 			}
 			if (team == yellow) {
-				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Robo2.r1,
-						Robo2.r2, Robo2.r3, &Robo2);
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Robo2.r1, Robo2.r2, Robo2.r3, &Robo2);
 			}
 
 		}
@@ -289,12 +293,14 @@ static void PositionTask(void* pvParameters) {
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy1.r1, Enemy1.r2,
-						Enemy1.r3, &Enemy1);
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy1.r1,
+						Enemy1.r2, Enemy1.r3, &Enemy1);
 			}
 			if (team == yellow) {
-				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy1.r1,
-						Enemy1.r2, Enemy1.r3, &Enemy1);
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
 			}
 		}
 
@@ -305,12 +311,14 @@ static void PositionTask(void* pvParameters) {
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy2.r1, Enemy2.r2,
-						Enemy2.r3, &Enemy2);
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy2.r1,
+						Enemy2.r2, Enemy2.r3, &Enemy2);
 			}
 			if (team == yellow) {
-				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy2.r1,
-						Enemy2.r2, Enemy2.r3, &Enemy2);
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Enemy2.r1, Enemy2.r2, Enemy2.r3, &Enemy2);
 			}
 		}
 	}
