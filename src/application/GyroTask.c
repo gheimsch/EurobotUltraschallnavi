@@ -32,12 +32,15 @@
 /* --------------------------------- imports ---------------------------------*/
 
 #include "../lib/I2C.h"		/* Own header include */
+#include "../lib/UART.h"
 #include "math.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "string.h"
 
 #include "GyroTask.h"
+#include "PositionTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
 /* register used to setup the gyro */
@@ -88,8 +91,8 @@ float getTempValue(void);
 void calculateAngle(int16_t, uint32_t);
 float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue);
 static void GyroTask(void* pvParameters);
-void SWV_printfloat(float number, uint32_t digits);
-void SWV_printnum(uint32_t number);
+void USARTPrint(const char *ToSend, unsigned char length);
+void itoa( int z, char* Buffer );
 /* ****************************************************************************/
 /* End Header : GyroTask.c													  */
 /* ****************************************************************************/
@@ -143,7 +146,7 @@ void initGyr(void) {
 	// Enable x, y, z and turn off power down:
 
 	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
-	writeI2C(Accelerometer, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
+	writeI2C(Gyro, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
 
 	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
 	writeI2C(Gyro, CTRL_REG2_G, &CTRL_REG2_G_DATA, 1, 100);
@@ -371,6 +374,7 @@ static void GyroTask(void* pvParameters) {
 	uint32_t t_start = 0;
 	uint32_t t_end = 0;
 	uint32_t t_delta = 0;
+	char Buffer[4] = {0};
 
 	int16_t outGyr = 0;
 
@@ -395,6 +399,9 @@ static void GyroTask(void* pvParameters) {
 
 		calculateAngle(outGyr, t_delta);
 
+		itoa((int) round(yaw), Buffer);
+		USARTPrint(Buffer, strlen(Buffer) + 1);
+
 		//SWV_printfloat(yaw, 4);
 
 
@@ -412,61 +419,45 @@ static void GyroTask(void* pvParameters) {
  * @retval None
  */
 
-void SWV_printfloat(float number, uint32_t digits) {
-	uint32_t i = 0;
-	//handle negative numbers
-	if (number < 0.0) {
-		ITM_SendChar('-');
-		number = -number;
-	}
-	//round correctly so that uart_printfloat(1.999, 2) shows as "2.00"
-	float rounding = 0.5;
-	for (i = 0; i < digits; ++i)
-		rounding = rounding / 10.0;
-	number = number + rounding;
+void USARTPrint(const char *ToSend, unsigned char length) {
+	unsigned int i;
 
-	//extract the integer part of the number and print it
-	uint64_t int_part = (uint64_t) number;
-	float remainder = (float) (number - (float) int_part);
-	SWV_printnum(int_part); //print the integer part
-	if (digits > 0)
-		ITM_SendChar('.'); //print decimal pint
-	uint32_t toprint;
-	while (digits-- > 0) {
-		remainder = remainder * 10.0;
-		toprint = (uint32_t) remainder;
-		SWV_printnum(toprint);
-		remainder = remainder - toprint;
+	/* Output a message  */
+	for (i = 0; i < length; i++) {
+		USART_SendData(USART1, (uint16_t) *ToSend++);
+		/* Loop until the end of transmission */
+		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
+		}
 	}
-
 }
 
-/**
- * @brief   This function sends numbers to the serial wire viewer.
- * @param  number: number to be displayed on SWV
- * @retval None
- */
+// Eigenimplementation von itoa(int to ascii)
+void itoa( int z, char* Buffer ){
+ int i = 0;
+ int j;
+ char tmp;
+ unsigned u;
 
-void SWV_printnum(uint32_t number) {
-	uint8_t buf[8 * sizeof(uint32_t)]; // Assumes 8-bit chars.
-	uint16_t i = 0;
+ //Vorzeichen berücksichtigen
+ if( z < 0 ) {
+ Buffer[0] = '-';
+ Buffer++;
+ u = ( (unsigned)-(z+1) ) + 1;
+ }
+ else {
+ u = (unsigned)z;
+ }
+ //Konvertieren der Zeichen
+ do {
+ Buffer[i++] = '0' + u % 10;
+ u /= 10;
+ } while( u > 0 );
 
-	//if number is 0
-	if (number == 0) {
-		ITM_SendChar('0'); //if number is zero
-		return;
-	}
-	//account for negative numbers
-	if (number < 0) {
-		ITM_SendChar('-');
-		number = number * -1;
-	}
-	while (number > 0) {
-		buf[i++] = number % 10; //display in base 10
-		number = number / 10;
-		//NOTE: the effect of i++ means that the i variable will be at number of digits + 1
-	}
-	for (; i > 0; i--) {
-		ITM_SendChar((char) ('0' + buf[i - 1]));
-	}
+ //Zusammensetzen und spiegeln
+ for( j = 0; j < i / 2; ++j ) {
+ tmp = Buffer[j];
+ Buffer[j] = Buffer[i-j-1];
+ Buffer[i-j-1] = tmp;
+ }
+ Buffer[i] = '\0';
 }

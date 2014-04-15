@@ -90,7 +90,7 @@ int main(void) {
 
     initUART(); // initialise UART
 
-    initPositionTask();
+    //initPositionTask();
 	initGyroTask();
 
     USART_SendData(USART1,'A');
