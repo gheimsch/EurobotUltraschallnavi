@@ -112,37 +112,17 @@ static void RFCommTask(void* pvParameters) {
 /* End : RFCommTask */
 /* ****************************************************************************/
 
-//USART RX IRQ Handler
-/*void USART1_IRQHandler(void) {
-	__disable_irq(); // kein disable nötig Vorsicht, allfällig critical section beim Auslesen (grosi)
+void USARTPrint(const unsigned char *ToSend, unsigned char length) {
+	unsigned int i;
 
-	if (USART_GetITStatus(USART1, USART_IT_RXNE ) != RESET) {
-		//Daten in Buffer Kopieren
-		RxMsg[i] = USART_ReceiveData(USART1 );
-		i++;
-		if (i >= (sizeof(RxMsg) - 1)) {
-			i = 0;
-			//Wenn Buffer voll alles null setzten
-			memset(&RxMsg, 0, sizeof(RxMsg));
+	/* Output a message  */
+	for (i = 0; i < length; i++) {
+		USART_SendData(USART1, (uint16_t) *ToSend++);
+		/* Loop until the end of transmission */
+		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
 		}
 	}
-	__enable_irq();
-}*/
-
-
-
-
-//void USARTPrint(const unsigned char *ToSend, unsigned char length) {
-//	unsigned int i;
-//
-//	/* Output a message  */
-//	for (i = 0; i < length; i++) {
-//		USART_SendData(USART1, (uint16_t) *ToSend++);
-//		/* Loop until the end of transmission */
-//		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
-//		}
-//	}
-//}
+}
 /*
 unsigned short SendRFMsg(const unsigned char *str) {
 	unsigned char len = 0, i = 0, j = 0;

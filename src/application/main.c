@@ -88,7 +88,7 @@ int main(void) {
     /* lib initializations */
 
 
-    initUART(); // initialise UART
+     // initialise UART
 
     //initPositionTask();
 	initGyroTask();

@@ -25,9 +25,12 @@
 #include "queue.h"
 
 #include "UARTTask.h"
+#include <string.h>
 /* ------------------------- module data declaration -------------------------*/
 xSemaphoreHandle semaphoreUART;
 xQueueHandle msgqUARTProcess;
+char RxMsg[15];
+unsigned char ctr = 0;
 /* ----------------------- module procedure declaration ----------------------*/
 void initUARTTask(void);
 static void UARTTask(void* pvParameters);
@@ -51,13 +54,8 @@ static void UARTTask(void* pvParameters);
 
 void initUARTTask(void) {
 
-	/* create the task */
-	xTaskCreate(UARTTask, (signed char *) UARTTASK_NAME, UARTTASK_STACK_SIZE,
-			NULL, UARTTASK_PRIORITY, NULL);
-
-	/* create Semaphore and take it */
-	vSemaphoreCreateBinary(semaphoreUART);
-	xSemaphoreTake(semaphoreUART, 0);
+	/* initialise the UART-Interface*/
+	initUART();
 
 	/* create Message Queue UART to Process Task */
 	msgqUARTProcess =
@@ -70,9 +68,9 @@ void initUARTTask(void) {
 /* ****************************************************************************/
 
 /******************************************************************************/
-/* Function: UARTTask */
+/* Function: UARTISRHandler */
 /******************************************************************************/
-/*! \brief UART Task
+/*! \brief UART ISR Handler
  *
  * \author heimg1, zursr1
  *
@@ -82,18 +80,28 @@ void initUARTTask(void) {
  *
  *
  *******************************************************************************/
+void USART1_IRQHandler(void) {
 
-static void UARTTask(void* pvParameters) {
+	char rxchar = 0;
 
-	//init values
+	if (USART_GetITStatus(USART1, USART_IT_RXNE ) != RESET) {
+		/*Daten in Buffer Kopieren*/
+		rxchar = USART_ReceiveData(USART1);
+		if((rxchar == 'R') || (ctr != 0)){
+			RxMsg[ctr] = rxchar;
+			ctr++;
+		}
+		/*Check if termination is reached or if buffer is full*/
+		if ((RxMsg[ctr-1] == '\n') || (ctr >= (sizeof(RxMsg)-1))) {
 
-	/* for ever */
-	for (;;) {
-
-
+			xQueueSendFromISR( msgqUARTProcess, &RxMsg, 0);
+			ctr = 0;
+			/*Wenn Buffer voll alles null setzten*/
+			memset(&RxMsg, 0, sizeof(RxMsg));
+		}
 	}
-}
 
+}
 /* ****************************************************************************/
-/* End : UARTTask */
+/* End : UARTISRHandler */
 /* ****************************************************************************/
