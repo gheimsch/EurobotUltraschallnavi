@@ -56,8 +56,14 @@ Position Enemy2;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
-void Trilateration2D(int, int, int, int, int, int, int, int, int, Position *);
+void Trilateration2D(uint16_t x1, uint16_t x2, uint16_t x3, uint16_t y1,
+		uint16_t y2, uint16_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
+		Position * pos);
 static void PositionTask(void* pvParameters);
+void posRobo1Request(uint16_t id, CAN_data_t* data);
+void posRobo2Request(uint16_t id, CAN_data_t* data);
+void posEnemy1Request(uint16_t id, CAN_data_t* data);
+void posEnemy2Request(uint16_t id, CAN_data_t* data);
 
 /* ****************************************************************************/
 /* End Header : Trilateration.c												  */
@@ -86,6 +92,16 @@ void initPositionTask(void) {
 	/* create Message Queue Position to CAN Task */
 	msgqPositionCAN =
 			xQueueCreate(POSITIONCAN_QUEUE_LENGTH, POSITIONCAN_ITEM_SIZE);
+
+	/* set the Position Request Listener for the own Robot */
+	setFunctionCANListener(posRobo1Request, NAVI_POSITION_REQUEST);
+
+	setFunctionCANListener(posRobo2Request, CONFEDERATE_POSITION_REQUEST);
+
+	setFunctionCANListener(posEnemy1Request, ENEMEY_1_POSITION_REQUEST);
+
+	setFunctionCANListener(posEnemy2Request, ENEMEY_2_POSITION_REQUEST);
+
 }
 
 /* ****************************************************************************/
@@ -129,15 +145,15 @@ void initPositionTask(void) {
  *
  * Function : More detailed description of the function
  *
- * \param[in] x1
- * \param[in] x2
- * \param[in] x3
- * \param[in] y1
- * \param[in] y2
- * \param[in] y3
- * \param[in] r1
- * \param[in] r2
- * \param[in] r3
+ * \param[in] x1 x-pos of the Transmitter 1
+ * \param[in] x2 x-pos of the Transmitter 2
+ * \param[in] x3 x-pos of the Transmitter 3
+ * \param[in] y1 y-pos of the Transmitter 1
+ * \param[in] y2 y-pos of the Transmitter 2
+ * \param[in] y3 y-pos of the Transmitter 3
+ * \param[in] r1 Measured Distance from Transmitter 1 to the Receiver
+ * \param[in] r2 Measured Distance from Transmitter 2 to the Receiver
+ * \param[in] r3 Measured Distance from Transmitter 3 to the Receiver
  * \param[in] pos
  *
  * \author heimg1
@@ -150,20 +166,21 @@ void initPositionTask(void) {
  *
  *******************************************************************************/
 
-void Trilateration2D(int x1, int x2, int x3, int y1, int y2, int y3, int r1,
-		int r2, int r3, Position *pos) {
+void Trilateration2D(uint16_t x1, uint16_t x2, uint16_t x3, uint16_t y1,
+		uint16_t y2, uint16_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
+		Position * pos) {
 
-	long xn[2][2];
-	long yn[2][2];
-	double d[2][2];
-	double x[2][2] = { { 0, 0 }, { 0, 0 } };
-	double y[2][2] = { { 0, 0 }, { 0, 0 } };
-	long detd = 0;
-	double tmp = 0;
+	int32_t xn[2][2];
+	int32_t yn[2][2];
+	double_t d[2][2];
+	double_t x[2][2] = { { 0, 0 }, { 0, 0 } };
+	double_t y[2][2] = { { 0, 0 }, { 0, 0 } };
+	int32_t detd = 0;
+	double_t tmp = 0;
 
-	xn[0][0] = (int) (pow(r1, 2) - pow(r2, 2)) - (pow(x1, 2) - pow(x2, 2))
+	xn[0][0] = (int32_t) (pow(r1, 2) - pow(r2, 2)) - (pow(x1, 2) - pow(x2, 2))
 			- (pow(y1, 2) - pow(y2, 2));
-	xn[1][0] = (int) (pow(r1, 2) - pow(r3, 2)) - (pow(x1, 2) - pow(x3, 2))
+	xn[1][0] = (int32_t) (pow(r1, 2) - pow(r3, 2)) - (pow(x1, 2) - pow(x3, 2))
 			- (pow(y1, 2) - pow(y3, 2));
 	xn[0][1] = 2 * (y2 - y1);
 	xn[1][1] = 2 * (y3 - y1);
@@ -223,7 +240,7 @@ static void PositionTask(void* pvParameters) {
 
 	//initialise stuff
 
-	int team = 0;
+	uint8_t team = tbd;
 
 	/* for ever */
 	for (;;) {
@@ -241,8 +258,8 @@ static void PositionTask(void* pvParameters) {
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo1.r1,
-						Robo1.r2, Robo1.r3, &Robo1);
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo1.r1, Robo1.r2,
+						Robo1.r3, &Robo1);
 			}
 			if (team == yellow) {
 				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Robo1.r1,
@@ -252,12 +269,14 @@ static void PositionTask(void* pvParameters) {
 
 		}
 		if (xActivatedMember == msgqRobo2) {
+
+			// get the distances
 			xQueueReceive( xActivatedMember, &Robo2, 0);
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo2.r1,
-						Robo2.r2, Robo2.r3, &Robo2);
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Robo2.r1, Robo2.r2,
+						Robo2.r3, &Robo2);
 			}
 			if (team == yellow) {
 				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Robo2.r1,
@@ -266,12 +285,14 @@ static void PositionTask(void* pvParameters) {
 
 		}
 		if (xActivatedMember == msgqEnemy1) {
+
+			// get the distances
 			xQueueReceive( xActivatedMember, &Enemy1, 0);
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy1.r1,
-						Enemy1.r2, Enemy1.r3, &Enemy1);
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy1.r1, Enemy1.r2,
+						Enemy1.r3, &Enemy1);
 			}
 			if (team == yellow) {
 				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy1.r1,
@@ -280,13 +301,15 @@ static void PositionTask(void* pvParameters) {
 
 		}
 
-		if (xActivatedMember == msgqEnemy1) {
+		if (xActivatedMember == msgqEnemy2) {
+
+			// get the distances
 			xQueueReceive( xActivatedMember, &Enemy2, 0);
 
 			// calculate the position
 			if (team == red) {
-				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy2.r1,
-						Enemy2.r2, Enemy2.r3, &Enemy2);
+				Trilateration2D(3000, 0, 0, 1000, 2000, 0, Enemy2.r1, Enemy2.r2,
+						Enemy2.r3, &Enemy2);
 			}
 			if (team == yellow) {
 				Trilateration2D(0, 3000, 3000, 1000, 0, 2000, Enemy2.r1,
@@ -307,19 +330,20 @@ static void PositionTask(void* pvParameters) {
 /******************************************************************************/
 /*! \brief sends the Position of the own Robot via CAN
  *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
  * \author zursr1
  *
  * \version 0.0.1
  *
  * \date 14.04.2014 Function created
  *
- * \todo ID
- *
  *
  *******************************************************************************/
 
-void posRobo1Request(void){
-	txNaviPositionResponse(Robo1.x,Robo1.y,Robo1.angle,0 /* (ID) */);
+void posRobo1Request(uint16_t id, CAN_data_t* data) {
+	txNaviPositionResponse(Robo1.x, Robo1.y, Robo1.angle, 0);
 }
 
 /* ****************************************************************************/
@@ -331,19 +355,20 @@ void posRobo1Request(void){
 /******************************************************************************/
 /*! \brief sends the Position of the confederated Robot via CAN
  *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
  * \author zursr1
  *
  * \version 0.0.1
  *
  * \date 14.04.2014 Function created
  *
- * \todo ID
- *
  *
  *******************************************************************************/
 
-void posRobo2Request(void){
-	txNaviPositionResponse(Robo2.x,Robo2.y,0,0 /* (ID) */);
+void posRobo2Request(uint16_t id, CAN_data_t* data) {
+	txNaviPositionResponse(Robo2.x, Robo2.y, 0, 0);
 }
 
 /* ****************************************************************************/
@@ -355,19 +380,20 @@ void posRobo2Request(void){
 /******************************************************************************/
 /*! \brief sends the Position of first Enemyrobot via CAN
  *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
  * \author zursr1
  *
  * \version 0.0.1
  *
  * \date 14.04.2014 Function created
  *
- * \todo ID
- *
  *
  *******************************************************************************/
 
-void posEnemy1Request(void){
-	txNaviPositionResponse(Enemy1.x,Enemy1.y,0,0 /* (ID) */);
+void posEnemy1Request(uint16_t id, CAN_data_t* data) {
+	txNaviPositionResponse(Enemy1.x, Enemy1.y, 0, 0);
 }
 
 /* ****************************************************************************/
@@ -379,19 +405,20 @@ void posEnemy1Request(void){
 /******************************************************************************/
 /*! \brief sends the Position of the second Enemyrobot via CAN
  *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
  * \author zursr1
  *
  * \version 0.0.1
  *
  * \date 14.04.2014 Function created
  *
- * \todo ID
- *
  *
  *******************************************************************************/
 
-void posEnemy2Request(void){
-	txNaviPositionResponse(Enemy2.x,Enemy2.y,0,0 /* (ID) */);
+void posEnemy2Request(uint16_t id, CAN_data_t* data) {
+	txNaviPositionResponse(Enemy2.x, Enemy2.y, 0, 0);
 }
 
 /* ****************************************************************************/

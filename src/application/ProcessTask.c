@@ -128,7 +128,7 @@ void getrad(char *RecID, char *TagID, unsigned int *rad ) {
 
 	volatile unsigned char i = 0;
 	char value[4] = { 0, 0, 0, 0 };
-	int valueret = 0;
+	uint32_t valueret = 0;
 	unsigned char Msgpos;
 	char Filterstr[9];		//Messagefilter
 

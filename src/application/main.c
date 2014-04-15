@@ -59,7 +59,7 @@
 /* End Header : main.c														  */
 /* ****************************************************************************/
 
-void posRequest(void){
+void posRequest(uint16_t id, CAN_data_t* data){
 	txNaviPositionResponse(300,300,45,0);
 }
 /******************************************************************************/
@@ -95,8 +95,8 @@ int main(void) {
 	initGyroTask();
 
     USART_SendData(USART1,'A');
+
     /* Application initializations */
-    setFunctionCANListener((CAN_function_listener_t)posRequest, 0x040);
     initCANGatekeeper(); /* have to the last initialisation modul! */
 
     /* Start the scheduler */

@@ -40,7 +40,7 @@
 extern xQueueHandle msgqPositionCAN;
 
 enum color {
-	red = 1, yellow = 1
+	red = 0, yellow = 1, tbd  = 2
 };
 
 /* ----------------------- module procedure declaration ----------------------*/
