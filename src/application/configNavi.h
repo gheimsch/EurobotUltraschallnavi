@@ -7,13 +7,11 @@
  ******************************************************************************
  * \brief configurate the typ of Robot (small or big)
  *
- *
  * \author heimg1, zursr1
  *
  * \version 0.0.1
  *
  * \history 14.04.2014 File Created
- *
  *
  *
  */
@@ -22,19 +20,18 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-//#define SET_ROBO_BIG
+#define SET_ROBO_BIG
 
 #ifndef SET_ROBO_BIG
 //small robot
+#define ROBO_BIG 	( 0 )
 #else
-//big robot
+#define ROBO_BIG 	( 1 )
 #endif
 /* ----------------------- module constant declaration -----------------------*/
 
 /* ------------------------- module type declaration -------------------------*/
-enum color {
-	red = 0, yellow = 1, tbd  = 2
-};
+
 /* ------------------------- module data declaration -------------------------*/
 
 /* ----------------------- module procedure declaration ----------------------*/
