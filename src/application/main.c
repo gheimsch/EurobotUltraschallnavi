@@ -89,17 +89,12 @@ int main(void) {
     /* lib initializations */
 
 
-    //initUART(); // initialise UART
+    initUART(); // initialise UART
 
     initPositionTask();
 	initGyroTask();
 
-
-//    initUART(); // initialise UART
-
-
-
-    //USART_SendData(USART1,"Hello World");
+    USART_SendData(USART1,'A');
     /* Application initializations */
     setFunctionCANListener((CAN_function_listener_t)posRequest, 0x040);
     initCANGatekeeper(); /* have to the last initialisation modul! */

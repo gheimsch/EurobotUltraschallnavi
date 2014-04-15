@@ -143,7 +143,7 @@ void initGyr(void) {
 	// Enable x, y, z and turn off power down:
 
 	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
-	writeI2C(Gyro, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
+	writeI2C(Accelerometer, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
 
 	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
 	writeI2C(Gyro, CTRL_REG2_G, &CTRL_REG2_G_DATA, 1, 100);
