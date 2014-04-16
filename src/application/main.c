@@ -79,16 +79,12 @@ int main(void) {
 
     /* lib initializations */
 
+//    initSyncTask();
 	initGyroTask();
 	initUARTPeripherial();
-	initRFCommTask();
+//	initRFCommTask();
 	initProcessTask();
 	initPositionTask();
-    //USART_SendData(USART1,'A');
-	while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){
-		;
-	}
-    SendRFMsg("![Hallo]");
 
     /* Application initializations */
     initCANGatekeeper(); /* have to the last initialisation modul! */

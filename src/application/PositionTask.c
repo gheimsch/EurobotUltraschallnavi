@@ -245,7 +245,7 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 static void PositionTask(void* pvParameters) {
 
 
-	team = red;
+	team = yellow;
 
 	/* for ever */
 	for (;;) {
@@ -335,6 +335,7 @@ static void PositionTask(void* pvParameters) {
 				Enemy1.y = Enemy1.y
 						+ compensateYaxisEnemyyellow(Enemy1.x, Enemy1.y);
 			}
+			Enemy1.angle = yaw;
 		}
 
 		if (xActivatedMember == msgqEnemy2) {
@@ -623,7 +624,7 @@ float compensateYaxisEnemyred(float x, float y) {
  *
  *******************************************************************************/
 
-float compensateXaxisRoboyellow(float x) {
+float compensateXaxisEnemyyellow(float x) {
 
 	float a = -0.0756;
 	float b = 145.7;
@@ -656,7 +657,7 @@ float compensateXaxisRoboyellow(float x) {
  *
  *******************************************************************************/
 
-float compensateYaxisRoboyellow(float x, float y) {
+float compensateYaxisEnemyyellow(float x, float y) {
 
 	float a = 0.04147;
 	float b = -0.04321;
@@ -690,7 +691,7 @@ float compensateYaxisRoboyellow(float x, float y) {
  *
  *******************************************************************************/
 
-float compensateXaxisEnemyyellow(float x) {
+float compensateXaxisRoboyellow(float x) {
 
 	float a = -0.0756;
 	float b = 131;
@@ -723,7 +724,7 @@ float compensateXaxisEnemyyellow(float x) {
  *
  *******************************************************************************/
 
-float compensateYaxisEnemyyellow(float x, float y) {
+float compensateYaxisRoboyellow(float x, float y) {
 
 	float a = 0.0331;
 	float b = -0.02139;

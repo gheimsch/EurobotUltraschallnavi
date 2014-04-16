@@ -26,6 +26,7 @@
 
 #include "PositionTask.h"
 #include "ProcessTask.h"
+#include "RFCommTask.h"
 #include "SyncTask.h"
 #include "CANGatekeeper.h"
 /* ------------------------- module data declaration -------------------------*/
@@ -159,7 +160,7 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 	nbrConfederate = data->gip_confederate;
 
 	/* Synchronise hexamite */
-	//TODO synchronisation Message for hexamite
+	xQueueSend(msgqRFComm, &SyncString, 0);
 
 	/* give Response */
 	txStartConfigurationConfirm();

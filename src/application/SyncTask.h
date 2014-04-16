@@ -33,7 +33,8 @@
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
-
+//Synchronisations String
+static const char SyncString[] = "M&q0:20,21,22 s3 $";
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initSyncTask(void);
 /* ****************************************************************************/

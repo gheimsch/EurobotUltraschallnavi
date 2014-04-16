@@ -40,8 +40,6 @@
 
 /* ------------------------- module data declaration -------------------------*/
 extern xQueueHandle msgqRFComm;
-//Synchronisations String
-static const unsigned char SyncString[] = "M&q0:20,21,22 s3 $";
 /* ----------------------- module procedure declaration ----------------------*/
 
 extern void initRFCommTask(void);
