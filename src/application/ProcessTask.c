@@ -47,21 +47,22 @@ Position Robo2Pos;
 Position Enemy1Pos;
 Position Enemy2Pos;
 
-//ID's von Tags und Receivern
+/* ID'2 von Tags */
 static char Tag1[] = "P20";
 static char Tag2[] = "P21";
 static char Tag3[] = "P22";
 
 #ifndef SET_ROBO_BIG	// if the small Robot is activated
-static char Receiver1[] = "R41";
-static char Receiver2[] = "R40";
+static char Receiver1[] = "R42";
+static char Receiver2[] = "R43";
 #else	//if the big robot is activated
-static char Receiver1[] = "R41";
+static char Receiver1[] = "R43";
 static char Receiver2[] = "R42";
 
 #endif
+/*  */
 static char Receiver3[] = "R40";
-static char Receiver4[] = "R43";
+static char Receiver4[] = "R41";
 
 char UARTMsg[UARTBUFFERSIZE];	//Receive Buffer
 
