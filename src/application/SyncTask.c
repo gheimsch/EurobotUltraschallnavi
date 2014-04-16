@@ -163,7 +163,7 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 	xQueueSend(msgqRFComm, &SyncString, 0);
 
 	/* give Response */
-	txStartConfigurationConfirm();
+	//txStartConfigurationConfirm();
 }
 
 /* ****************************************************************************/

@@ -79,10 +79,10 @@ int main(void) {
 
     /* lib initializations */
 
-//    initSyncTask();
+    initSyncTask();
 	initGyroTask();
 	initUARTPeripherial();
-//	initRFCommTask();
+	initRFCommTask();
 	initProcessTask();
 	initPositionTask();
 
