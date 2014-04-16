@@ -399,7 +399,7 @@ void posRobo1Request(uint16_t id, CAN_data_t* data) {
  *******************************************************************************/
 
 void posRobo2Request(uint16_t id, CAN_data_t* data) {
-	txNaviPositionResponse(Robo2.x, Robo2.y, 0, 0);
+	txConfederatePositionResponse(Robo2.x, Robo2.y, 0, 0);
 }
 
 /* ****************************************************************************/
@@ -424,7 +424,7 @@ void posRobo2Request(uint16_t id, CAN_data_t* data) {
  *******************************************************************************/
 
 void posEnemy1Request(uint16_t id, CAN_data_t* data) {
-	txNaviPositionResponse(Enemy1.x, Enemy1.y, 0, 0);
+	txEnemey1PositionResponse(Enemy1.x, Enemy1.y, 0, 0);
 }
 
 /* ****************************************************************************/
@@ -449,7 +449,7 @@ void posEnemy1Request(uint16_t id, CAN_data_t* data) {
  *******************************************************************************/
 
 void posEnemy2Request(uint16_t id, CAN_data_t* data) {
-	txNaviPositionResponse(Enemy2.x, Enemy2.y, 0, 0);
+	txEnemey2PositionResponse(Enemy2.x, Enemy2.y, 0, 0);
 }
 
 /* ****************************************************************************/
