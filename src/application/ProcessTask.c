@@ -56,13 +56,13 @@ static char Tag3[] = "P22";
 static char Receiver1[] = "R42";
 static char Receiver2[] = "R43";
 #else	//if the big robot is activated
-static char Receiver1[] = "R43";
+static char Receiver1[] = "R41";
 static char Receiver2[] = "R42";
 
 #endif
 /*  */
 static char Receiver3[] = "R40";
-static char Receiver4[] = "R41";
+static char Receiver4[] = "R43";
 
 char UARTMsg[UARTBUFFERSIZE];	//Receive Buffer
 

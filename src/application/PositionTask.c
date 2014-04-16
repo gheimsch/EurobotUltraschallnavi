@@ -268,8 +268,8 @@ static void PositionTask(void* pvParameters) {
 			}
 
 			/* compensate the measured values */
-			Robo1.x = Robo1.x + compensateXaxisRobo(Robo1.x);
-			Robo1.y = Robo1.y + compensateYaxisRobo(Robo1.x, Robo1.y);
+//			Robo1.x = Robo1.x + compensateXaxisRobo(Robo1.x);
+//			Robo1.y = Robo1.y + compensateYaxisRobo(Robo1.x, Robo1.y);
 			Robo1.angle = yaw;
 
 		}
@@ -313,9 +313,10 @@ static void PositionTask(void* pvParameters) {
 						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
 			}
 
+			Enemy1.angle = yaw;
 			/* compensate the measured values */
-			Enemy1.x = Enemy1.x + compensateXaxisEnemy(Enemy1.x);
-			Enemy1.y = Enemy1.y + compensateYaxisEnemy(Enemy1.x, Enemy1.y);
+//			Enemy1.x = Enemy1.x + compensateXaxisEnemy(Enemy1.x);
+//			Enemy1.y = Enemy1.y + compensateYaxisEnemy(Enemy1.x, Enemy1.y);
 		}
 
 		if (xActivatedMember == msgqEnemy2) {
