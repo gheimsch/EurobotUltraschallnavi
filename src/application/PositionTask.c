@@ -65,10 +65,14 @@ void posRobo1Request(uint16_t id, CAN_data_t* data);
 void posRobo2Request(uint16_t id, CAN_data_t* data);
 void posEnemy1Request(uint16_t id, CAN_data_t* data);
 void posEnemy2Request(uint16_t id, CAN_data_t* data);
-float compensateXaxisRobo(float x);
-float compensateYaxisRobo(float x, float y);
-float compensateXaxisEnemy(float x);
-float compensateYaxisEnemy(float x, float y);
+float compensateXaxisRoboyellow(float x);
+float compensateYaxisRoboyellow(float x, float y);
+float compensateXaxisEnemyyellow(float x);
+float compensateYaxisEnemyyellow(float x, float y);
+float compensateXaxisRobored(float x);
+float compensateYaxisRobored(float x, float y);
+float compensateXaxisEnemyred(float x);
+float compensateYaxisEnemyred(float x, float y);
 /* ****************************************************************************/
 /* End Header : Trilateration.c												  */
 /* ****************************************************************************/
@@ -240,7 +244,6 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 
 static void PositionTask(void* pvParameters) {
 
-	//initialise stuff
 
 	team = red;
 
@@ -260,16 +263,22 @@ static void PositionTask(void* pvParameters) {
 				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
 						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo1.r1,
 						Robo1.r2, Robo1.r3, &Robo1);
+
+				/* compensate the measured values */
+				Robo1.x = Robo1.x + compensateXaxisRobored(Robo1.x);
+				Robo1.y = Robo1.y + compensateYaxisRobored(Robo1.x, Robo1.y);
 			}
 			if (team == yellow) {
 				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Robo1.r1, Robo1.r2, Robo1.r3, &Robo1);
+
+				/* compensate the measured values */
+				Robo1.x = Robo1.x + compensateXaxisRoboyellow(Robo1.x);
+				Robo1.y = Robo1.y + compensateYaxisRoboyellow(Robo1.x, Robo1.y);
 			}
 
-			/* compensate the measured values */
-//			Robo1.x = Robo1.x + compensateXaxisRobo(Robo1.x);
-//			Robo1.y = Robo1.y + compensateYaxisRobo(Robo1.x, Robo1.y);
+			/* get the angle */
 			Robo1.angle = yaw;
 
 		}
@@ -284,16 +293,20 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo2.r1,
 						Robo2.r2, Robo2.r3, &Robo2);
 
+				/* compensate the measured values */
+				Robo2.x = Robo2.x + compensateXaxisRobored(Robo2.x);
+				Robo2.y = Robo2.y + compensateYaxisRobored(Robo2.x, Robo2.y);
+
 			}
 			if (team == yellow) {
 				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Robo2.r1, Robo2.r2, Robo2.r3, &Robo2);
-			}
 
-			/* compensate the measured values */
-			Robo2.x = Robo2.x + compensateXaxisRobo(Robo2.x);
-			Robo2.y = Robo2.y + compensateYaxisRobo(Robo2.x, Robo2.y);
+				/* compensate the measured values */
+				Robo2.x = Robo2.x + compensateXaxisRoboyellow(Robo2.x);
+				Robo2.y = Robo2.y + compensateYaxisRoboyellow(Robo2.x, Robo2.y);
+			}
 
 		}
 		if (xActivatedMember == msgqEnemy1) {
@@ -306,17 +319,22 @@ static void PositionTask(void* pvParameters) {
 				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
 						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy1.r1,
 						Enemy1.r2, Enemy1.r3, &Enemy1);
+
+				/* compensate the measured values */
+				Enemy1.x = Enemy1.x + compensateXaxisEnemyred(Enemy1.x);
+				Enemy1.y = Enemy1.y
+						+ compensateYaxisEnemyred(Enemy1.x, Enemy1.y);
 			}
 			if (team == yellow) {
 				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
-			}
 
-			Enemy1.angle = yaw;
-			/* compensate the measured values */
-//			Enemy1.x = Enemy1.x + compensateXaxisEnemy(Enemy1.x);
-//			Enemy1.y = Enemy1.y + compensateYaxisEnemy(Enemy1.x, Enemy1.y);
+				/* compensate the measured values */
+				Enemy1.x = Enemy1.x + compensateXaxisEnemyyellow(Enemy1.x);
+				Enemy1.y = Enemy1.y
+						+ compensateYaxisEnemyyellow(Enemy1.x, Enemy1.y);
+			}
 		}
 
 		if (xActivatedMember == msgqEnemy2) {
@@ -329,16 +347,22 @@ static void PositionTask(void* pvParameters) {
 				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
 						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy2.r1,
 						Enemy2.r2, Enemy2.r3, &Enemy2);
+
+				/* compensate the measured values */
+				Enemy2.x = Enemy2.x + compensateXaxisEnemyred(Enemy2.x);
+				Enemy2.y = Enemy2.y
+						+ compensateYaxisEnemyred(Enemy2.x, Enemy2.y);
 			}
 			if (team == yellow) {
 				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Enemy2.r1, Enemy2.r2, Enemy2.r3, &Enemy2);
-			}
 
-			/* compensate the measured values */
-			Enemy2.x = Enemy2.x + compensateXaxisEnemy(Enemy2.x);
-			Enemy2.y = Enemy2.y + compensateYaxisEnemy(Enemy2.x, Enemy2.y);
+				/* compensate the measured values */
+				Enemy2.x = Enemy2.x + compensateXaxisEnemyyellow(Enemy2.x);
+				Enemy2.y = Enemy2.y
+						+ compensateYaxisEnemyyellow(Enemy2.x, Enemy2.y);
+			}
 		}
 	}
 }
@@ -447,7 +471,7 @@ void posEnemy2Request(uint16_t id, CAN_data_t* data) {
 /* ****************************************************************************/
 
 /******************************************************************************/
-/* Function: compensateXaxisRobo */
+/* Function: compensateXaxisRobored */
 /******************************************************************************/
 /*! \brief compensates the Error of the x-Axis of our Robots with a linear
  * 		   function
@@ -465,20 +489,20 @@ void posEnemy2Request(uint16_t id, CAN_data_t* data) {
  *
  *******************************************************************************/
 
-float compensateXaxisRobo(float x) {
+float compensateXaxisRobored(float x) {
 
-	float a = -0.0756;
-	float b = 131;
+	float a = -0.0801;
+	float b = 103.7;
 
 	return a * x + b;
 }
 
 /* ****************************************************************************/
-/* End : compensateXaxisRobo */
+/* End : compensateXaxisRobored */
 /* ****************************************************************************/
 
 /******************************************************************************/
-/* Function: compensateYaxisRobo */
+/* Function: compensateYaxisRobored */
 /******************************************************************************/
 /*! \brief compensates the Error of the y-Axis of our Robots with a polynomical
  * 		   function
@@ -498,23 +522,23 @@ float compensateXaxisRobo(float x) {
  *
  *******************************************************************************/
 
-float compensateYaxisRobo(float x, float y) {
+float compensateYaxisRobored(float x, float y) {
 
-	float a = 0.0331;
-	float b = -0.02139;
-	float c = -0.00003513;
-	float d = 0.000004503;
-	float e = 34.35;
+	float a = -0.04324;
+	float b = -0.1853;
+	float c = 0.00004126;
+	float d = 0.00002256;
+	float e = 134.8;
 
 	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
 }
 
 /* ****************************************************************************/
-/* End : compensateYaxisRobo */
+/* End : compensateYaxisRobored */
 /* ****************************************************************************/
 
 /******************************************************************************/
-/* Function: compensateXaxisEnemy */
+/* Function: compensateXaxisEnemyred */
 /******************************************************************************/
 /*! \brief compensates the Error of the x-Axis of our Enemys with a linear
  * 		   function
@@ -532,20 +556,20 @@ float compensateYaxisRobo(float x, float y) {
  *
  *******************************************************************************/
 
-float compensateXaxisEnemy(float x) {
+float compensateXaxisEnemyred(float x) {
 
-	float a = -0.0756;
-	float b = 145.7;
+	float a = -0.08;
+	float b = 118.4;
 
 	return a * x + b;
 }
 
 /* ****************************************************************************/
-/* End : compensateXaxisEnemy */
+/* End : compensateXaxisEnemyred */
 /* ****************************************************************************/
 
 /******************************************************************************/
-/* Function: compensateYaxisEnemy */
+/* Function: compensateYaxisEnemyred */
 /******************************************************************************/
 /*! \brief compensates the Error of the y-Axis of our Enemys with a polynomical
  * 		   function
@@ -565,7 +589,74 @@ float compensateXaxisEnemy(float x) {
  *
  *******************************************************************************/
 
-float compensateYaxisEnemy(float x, float y) {
+float compensateYaxisEnemyred(float x, float y) {
+
+	float a = -0.04328;
+	float b = -0.1443;
+	float c = 0.00004424;
+	float d = 0.00000723;
+	float e = 112.2;
+
+	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
+}
+
+/* ****************************************************************************/
+/* End : compensateYaxisEnemyred */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateXaxisRoboyellow */
+/******************************************************************************/
+/*! \brief compensates the Error of the x-Axis of our own Robot with a linear
+ * 		   function
+ *
+ * \param[in] x measured x-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+float compensateXaxisRoboyellow(float x) {
+
+	float a = -0.0756;
+	float b = 145.7;
+
+	return a * x + b;
+}
+
+/* ****************************************************************************/
+/* End : compensateXaxisRoboyellow */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateYaxisRoboyellow */
+/******************************************************************************/
+/*! \brief compensates the Error of the y-Axis of our Robot with a polynomical
+ * 		   function
+ *
+ *
+ * \param[in] x measured x-Axis
+ * \param[in] y measured y-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+float compensateYaxisRoboyellow(float x, float y) {
 
 	float a = 0.04147;
 	float b = -0.04321;
@@ -577,87 +668,72 @@ float compensateYaxisEnemy(float x, float y) {
 }
 
 /* ****************************************************************************/
-/* End : compensateYaxisEnemy */
+/* End : compensateYaxisRoboyellow */
 /* ****************************************************************************/
 
-/*******************************************************************************
- * Function Name  : main
- * Description    : Main program
- * Input          : None
- * Output         : None
- * Return         : None
- * Attention	  : None
+/******************************************************************************/
+/* Function: compensateXaxisEnemyyellow */
+/******************************************************************************/
+/*! \brief compensates the Error of the x-Axis of our Enemys Robot with a linear
+ * 		   function
+ *
+ * \param[in] x measured x-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
  *******************************************************************************/
-//int main(void)
-//{
-//
-//	LCD_Initializtion();
-//	LCD_BackLight_Init();
-//	LCD_Clear(Black);
-//	UART_Config();
-//	while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET){
-//		;
-//	}
-//	SendRFMsg(SyncString);
-//	LCD_DrawPicture(0,0,200,300,&Spielfeld);
-//
-//  /* Infinite loop */
-//  while (1)
-//  {
-//	  if((GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13) == 0)){
-//		  SendRFMsg("![Hallo]");
-//	  }
-//
-//		getrad(Receiver4,Tag1,&Robo1Pos.r1);
-//		getrad(Receiver4,Tag2,&Robo1Pos.r2);
-//		getrad(Receiver4,Tag3,&Robo1Pos.r3);
-//		getrad(Receiver3,Tag1,&Robo2Pos.r1);
-//		getrad(Receiver3,Tag2,&Robo2Pos.r2);
-//		getrad(Receiver3,Tag3,&Robo2Pos.r3);
-//	  //GPIO_WriteBit(GPIOA,GPIO_Pin_1,Bit_SET);
-//	  //GPIO_WriteBit(GPIOA,GPIO_Pin_1,Bit_RESET);
-//
-//	 if((Robo1Pos.r1 != 0) && (Robo1Pos.r2 != 0) && (Robo1Pos.r3 != 0)){
-//		 __disable_irq();
-//		  Trilateration2D(0,3000,3000,1000,0,2000,Robo1Pos.r1,Robo1Pos.r2,Robo1Pos.r3,&Robo1Pos);
-//		  LCD_FillCircle(200-(int)(Robo1Pos.y/10),300-(int)(Robo1Pos.x/10),3,Blue);
-//		  if((Robo1Pos.x>2480) || (Robo1Pos.x<2450)){
-//			  test = 1;
-//		  }
-//		  sprintf(stringout,"%4d",Robo1Pos.x);
-//		  GUI_Text(200,0,stringout,Blue,Black);
-//		  sprintf(stringout,"%4d",Robo1Pos.y);
-//		  GUI_Text(200,20,stringout,Blue,Black);
-////		  sprintf(stringout,"%4d",Robo1Pos.r1);
-////		  GUI_Text(200,0,stringout,Blue,Black);
-////		  sprintf(stringout,"%4d",Robo1Pos.r2);
-////		  GUI_Text(200,20,stringout,Blue,Black);
-////		  sprintf(stringout,"%4d",Robo1Pos.r3);
-////		  GUI_Text(200,40,stringout,Blue,Black);
-//		  Robo1Pos.r1 = 0;
-//		  Robo1Pos.r2 = 0;
-//		  Robo1Pos.r3 = 0;
-//		  __enable_irq();
-//	  }
-//
-//	 if((Robo2Pos.r1 != 0) && (Robo2Pos.r2 != 0) && (Robo2Pos.r3 != 0)){
-//		 __disable_irq();
-//		  Trilateration2D(0,3000,3000,1000,0,2000,Robo2Pos.r1,Robo2Pos.r2,Robo2Pos.r3,&Robo2Pos);
-//		  LCD_FillCircle(200-(int)(Robo2Pos.y/10),300-(int)(Robo2Pos.x/10),3,Red);
-//		  if((Robo2Pos.y>1380) || (Robo2Pos.y<1350)){
-//			  test = 1;
-//		  }
-//		  sprintf(stringout,"%4d",Robo2Pos.x);
-//		  GUI_Text(200,40,stringout,Red,Black);
-//		  sprintf(stringout,"%4d",Robo2Pos.y);
-//		  GUI_Text(200,60,stringout,Red,Black);
-//		  Robo2Pos.r1 = 0;
-//		  Robo2Pos.r2 = 0;
-//		  Robo2Pos.r3 = 0;
-//		  __enable_irq();
-//	  }
-//  }
-//}
-/*********************************************************************************************************
- END FILE
- *********************************************************************************************************/
+
+float compensateXaxisEnemyyellow(float x) {
+
+	float a = -0.0756;
+	float b = 131;
+
+	return a * x + b;
+}
+
+/* ****************************************************************************/
+/* End : compensateXaxisEnemyyellow */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateYaxisEnemyyellow */
+/******************************************************************************/
+/*! \brief compensates the Error of the y-Axis of our Enemys Robot with a polynomical
+ * 		   function
+ *
+ *
+ * \param[in] x measured x-Axis
+ * \param[in] y measured y-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+float compensateYaxisEnemyyellow(float x, float y) {
+
+	float a = 0.0331;
+	float b = -0.02139;
+	float c = -0.00003513;
+	float d = 0.000004503;
+	float e = 34.35;
+
+	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
+}
+
+/* ****************************************************************************/
+/* End : compensateYaxisEnemyyellow */
+/* ****************************************************************************/
