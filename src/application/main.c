@@ -81,14 +81,14 @@ int main(void) {
 
 	initGyroTask();
 	initUARTPeripherial();
-//	initRFCommTask();
+	initRFCommTask();
 	initProcessTask();
 	initPositionTask();
     //USART_SendData(USART1,'A');
-//	while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET){
-//		;
-//	}
-//    SendRFMsg("T&[Hello World]");
+	while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET){
+		;
+	}
+    SendRFMsg("![Hallo]");
 
     /* Application initializations */
     initCANGatekeeper(); /* have to the last initialisation modul! */

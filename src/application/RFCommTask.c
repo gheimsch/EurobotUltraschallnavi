@@ -107,7 +107,7 @@ static void RFCommTask(void* pvParameters) {
 
 		// get the distances
 		xQueueReceive( msgqRFComm, &RFMsgBuffer, 0);
-		SendRFMsg(RFMsgBuffer);
+		//SendRFMsg(RFMsgBuffer);
 
 	}
 }

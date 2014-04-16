@@ -30,12 +30,12 @@
 #define ROBO_BIG 	( 1 )
 #endif
 
-#define X_TAG20_RED			( 3000 )
+#define X_TAG20_RED			( 3060 )
 #define Y_TAG20_RED			( 1000 )
-#define X_TAG21_RED			( 0 )
-#define Y_TAG21_RED			( 2000 )
-#define X_TAG22_RED			( 0 )
-#define Y_TAG22_RED			( 0 )
+#define X_TAG21_RED			( -60 )
+#define Y_TAG21_RED			( 2060 )
+#define X_TAG22_RED			( -60 )
+#define Y_TAG22_RED			( -60 )
 
 #define X_TAG20_YELLOW		( -60 )
 #define Y_TAG20_YELLOW		( 1000 )

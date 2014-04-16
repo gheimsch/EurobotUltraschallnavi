@@ -242,7 +242,7 @@ static void PositionTask(void* pvParameters) {
 
 	//initialise stuff
 
-	team = yellow;
+	team = red;
 
 	/* for ever */
 	for (;;) {
