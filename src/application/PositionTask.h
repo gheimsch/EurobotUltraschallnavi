@@ -4,10 +4,9 @@
 /******************************************************************************/
 /*! \file PositionTask.h
  ******************************************************************************
- * \brief Short description of the files function
+ * \brief Calculates the Position of the Robots and sends them via CAN to the
+ * 			System
  *
- *
- * Function : More detailed description of the files function
  *
  * \author zursr1,heimg1
  *
@@ -15,10 +14,6 @@
  *
  * \history 25.03.2014 File Created
  *
- *
- * \ingroup <group name> [<group name 2> <group name 3>]
- *
- * \todo If u have some todo's for the h-file, add it here
  *
  */
 /* ****************************************************************************/

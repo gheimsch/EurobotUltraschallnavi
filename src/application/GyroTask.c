@@ -2,27 +2,20 @@
  ****************************************************************************
  * \file	GyroTask.c
  ******************************************************************************
- * \brief Short description of the files function
+ * \brief Reads out the angulare rate of the Gyro and calculates the direction
+ * 			of the Robot
  *
- *
- * Function : More detailed description of the files function
- *
- * Procedures : 	vDefaultTask(void*)
- * 				InitDefaultTask()
- *              	function3()...
+ * Function : Reads out the angulare rate of the Gyro and calculates the direction
+ * 			of the Robot
  *
  * \author zursr1,heimg1
+ *
+ * \see Jordan McConnell, SparkFun Electronics
  *
  * \version 0.0.1
  *
  * \history 10.04.2014 File Created
  *
- *
- * \ingroup <group name> [<group name 2> <group name 3>]
- *
- * \todo If u have some todo's for the c-file, add it here
- *
- * \bug Description of the bug
  *
  */
 /* ****************************************************************************/
@@ -63,11 +56,11 @@ static uint8_t CTRL_REG3_G_DATA = 0x08;
 static uint8_t CTRL_REG4_G_DATA = 0x00;
 static uint8_t CTRL_REG5_G_DATA = 0x00;
 
-static float gyrScale = 0; 	// scale of the Gyro set with the sensivity of the devise
-static float gyrOffset = 0;	// measured Offset of the gyro
-static float driftyaw = 0;	// constants to compensate linear drift
+static float gyrScale = 0; 	/* scale of the Gyro set with the sensivity of the devise */
+static float gyrOffset = 0;	/* measured Offset of the gyro */
+static float driftyaw = 0;	/* constants to compensate linear drift */
 
-float yaw = 0;		// measured angle
+float yaw = 0;		/* measured angle */
 
 typedef struct RungeKuta {
 	float fourth_Prev;
@@ -76,7 +69,7 @@ typedef struct RungeKuta {
 	float Prev;
 } RungeKutta;
 
-RungeKutta RukaRaw_yaw;		// struct to approximate the angle
+RungeKutta RukaRaw_yaw;		/* struct to approximate the angle */
 
 /* ----------------------- module procedure declaration ----------------------*/
 
@@ -91,8 +84,6 @@ float getTempValue(void);
 void calculateAngle(int16_t, uint32_t);
 float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue);
 static void GyroTask(void* pvParameters);
-//void USARTPrint(const char *ToSend, unsigned char length);
-//void itoa( int z, char* Buffer );
 /* ****************************************************************************/
 /* End Header : GyroTask.c													  */
 /* ****************************************************************************/
@@ -129,72 +120,165 @@ void initGyroTask(void) {
 /* End : initGyroTask */
 /* ****************************************************************************/
 
-/**
- *************************************************************************************
- * @brief	initialise the gyro, setting the specifics registers
- * @param	sensitivity: sensitivity of the sensor
- * @note 	just called for initialisation
- **************************************************************************************
- */
+/******************************************************************************/
+/* Function: GyroTask */
+/******************************************************************************/
+/*! \brief Gyro Task measures the angular rate and calculates the angle
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 11.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void GyroTask(void* pvParameters) {
+
+	/* initialise Parameter used for time measurement */
+	uint32_t t_start = 0;
+	uint32_t t_end = 0;
+	uint32_t t_delta = 0;
+
+	/* angle rate */
+	int16_t outGyr = 0;
+
+	t_start = xTaskGetTickCount();
+
+	calculateGyroOffsets();
+	calculateDrift();
+
+	/* for ever */
+	for (;;) {
+
+		vTaskDelay(10 / portTICK_RATE_MS);
+
+		outGyr = getGyrValues();
+
+		t_end = xTaskGetTickCount();
+
+		t_delta = t_end - t_start;
+		t_start = t_end;
+
+		calculateAngle(outGyr, t_delta);
+
+	}
+}
+
+/* ****************************************************************************/
+/* End : GyroTask */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: initGyr */
+/******************************************************************************/
+/*! \brief initialise the gyro, setting the specifics registers
+ *
+ *
+ * \note just called for initialisation
+ *
+ * \see Jordan McConnell, SparkFun Electronics
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ *
+ * \date 11.04.2014 Function created
+ *
+ *******************************************************************************/
 
 void initGyr(void) {
 
-	setGyrSensitivity(250);		// set sensivity and gyro Scale
+	setGyrSensitivity(250);		/* set sensivity and gyro Scale */
 
-	// Check the datasheet (52ff)
+	/* Check the datasheet (52ff) */
 
-	// Enable x, y, z and turn off power down:
+	/* Enable x, y, z and turn off power down: */
 
-	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
+	/* If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2: */
 	writeI2C(Gyro, CTRL_REG1_G, &CTRL_REG1_G_DATA, 1, 100);
 
-	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
+	/* If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2: */
 	writeI2C(Gyro, CTRL_REG2_G, &CTRL_REG2_G_DATA, 1, 100);
 
-	// Configure CTRL_REG3 to generate data ready interrupt on INT2
-	// No interrupts used on INT1, if you'd like to configure INT1
-	// or INT2 otherwise, consult the datasheet:
+	/* Configure CTRL_REG3 to generate data ready interrupt on INT2
+	No interrupts used on INT1, if you'd like to configure INT1
+	or INT2 otherwise, consult the datasheet: */
 	writeI2C(Gyro, CTRL_REG3_G, &CTRL_REG3_G_DATA, 1, 100);
 
-	// CTRL_REG4 controls the full-scale range, among other things:
+	/* CTRL_REG4 controls the full-scale range, among other things: */
 	writeI2C(Gyro, CTRL_REG4_G, &CTRL_REG4_G_DATA, 1, 100);
 
-	// CTRL_REG5 controls high-pass filtering of outputs, use it
-	// if you'd like:
+	/* CTRL_REG5 controls high-pass filtering of outputs, use it
+	if you'd like: */
 	writeI2C(Gyro, CTRL_REG5_G, &CTRL_REG5_G_DATA, 1, 100);
 }
+/* ****************************************************************************/
+/* End : initGyr */
+/* ****************************************************************************/
 
-/**
- *************************************************************************************
- * @brief	set the sensitivy of the gyroscope in fps
- * @param	sensitivity: sensitivity of the sensor
- * @note 	just called while initialisation
- **************************************************************************************
- */
+/******************************************************************************/
+/* Function: setGyrSensitivity */
+/******************************************************************************/
+/*! \brief set the sensitivy of the gyroscope in fps
+ *
+ *
+ * \param[in] sensitivity: sensitivity of the sensor
+ *
+ * \note just called while initialisation
+ *
+ * \see Jordan McConnell, SparkFun Electronics
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ *
+ * \date 11.04.2014 Function created
+ *
+ *******************************************************************************/
 
 void setGyrSensitivity(uint16_t sensitivity) {
 
 	if (sensitivity == 500) {
-		gyrScale = 0.0175; // from the datasheet
+		gyrScale = 0.0175; /* from the datasheet */
 		CTRL_REG4_G_DATA = 0x10;
 	} else if (sensitivity == 2000) {
-		gyrScale = 0.070; // from the datasheet
+		gyrScale = 0.070; /* from the datasheet */
 		CTRL_REG4_G_DATA = 0x20;
 	} else {
-		// default value : 250 dps
-		gyrScale = 0.00875; // from the datasheet
+		/* default value : 250 dps */
+		gyrScale = 0.00875; /* from the datasheet */
 		CTRL_REG4_G_DATA = 0x00;
 	}
 }
 
-/**
- *************************************************************************************
- * @brief	calculates the offset of the gyroscope (for better data reading later)
- * @param	none
- * @note	just called while initialisation
- * @warning The gyro must not be in movement when calculating the offset
- **************************************************************************************
- */
+/* ****************************************************************************/
+/* End : setGyrSensitivity */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: calculateGyroOffsets */
+/******************************************************************************/
+/*! \brief calculates the offset of the gyroscope (for better data reading later)
+ *
+ *
+ * \note just called while initialisation
+ *
+ * \warning The gyro must not be in movement when calculating the offset
+ *
+ * \see Jordan McConnell, SparkFun Electronics
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ *
+ * \date 11.04.2014 Function created
+ *
+ *******************************************************************************/
 
 void calculateGyroOffsets(void) {
 
@@ -214,25 +298,39 @@ void calculateGyroOffsets(void) {
 
 	gyrOffset = totalGz / (float) n;
 }
+/* ****************************************************************************/
+/* End : calculateGyroOffsets */
+/* ****************************************************************************/
 
-/**
- *************************************************************************************
- * @brief	calculates the gyro drift (for better data reading later)
- * @param	none
- * @warning The gyro must not be in movement when calculating the drift
- **************************************************************************************
- */
+/******************************************************************************/
+/* Function: calculateDrift */
+/******************************************************************************/
+/*! \brief calculates the gyro drift (for better data reading later)
+ *
+ *
+ * \note just called while initialisation
+ *
+ * \warning The gyro must not be in movement when calculating the offset
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ *
+ * \date 11.04.2014 Function created
+ *
+ *******************************************************************************/
 
 void calculateDrift(void) {
 
-	static float Gz[100] = { 0 };	// all read out angular rates over 1 sec
-	static float tz[100] = { 0 };	// time between the measurements
-	static float a[99] = { 0 };	// drift
+	static float Gz[100] = { 0 };	/* all read out angular rates over 1 sec */
+	static float tz[100] = { 0 };	/* time between the measurements */
+	static float a[99] = { 0 };		/* drift */
 	float gyrValue;
 
-	uint32_t t_Start = 0;	// start timer of the measurement
-	uint32_t t_End = 0;		// end timer of the measurement
-	uint32_t delta_t;	// measured time
+	uint32_t t_Start = 0;	/* start timer of the measurement */
+	uint32_t t_End = 0;		/* end timer of the measurement */
+	uint32_t delta_t;		/* measured time */
 
 	uint16_t nbIterations = 100;
 	uint16_t i = 0;
@@ -272,18 +370,34 @@ void calculateDrift(void) {
 	}
 }
 
-/**
- *************************************************************************************
- * @brief	get the Data Values of the Gyro
- * @param	none
- * @return	gyrValue: angular rate in z-axis
- **************************************************************************************
- */
+/* ****************************************************************************/
+/* End : calculateDrift */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: getGyrValues */
+/******************************************************************************/
+/*! \brief get the Data Values of the Gyro
+ *
+ *
+ * \return gyrValue: angular rate in z-axis
+ *
+ * \see Jordan McConnell, SparkFun Electronics
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ *
+ * \date 11.04.2014 Function created
+ *
+ *******************************************************************************/
+
 int16_t getGyrValues(void) {
 
-	uint8_t readBuf[6] = { 0 };	// Buffer to save the read out register
+	uint8_t readBuf[6] = { 0 };	/* Buffer to save the read out register */
 
-	int16_t gyrValue;	// measured angular rate
+	int16_t gyrValue;	/* measured angular rate */
 
 	writeI2C(Gyro, (OUT_X_L_G), OUT_X_L_G, 0, 10);
 	readI2C(Gyro, readBuf, 6, 10);
@@ -293,20 +407,37 @@ int16_t getGyrValues(void) {
 	return gyrValue;
 
 }
+/* ****************************************************************************/
+/* End : getGyrValues */
+/* ****************************************************************************/
 
-/**
- *************************************************************************************
- * @brief	calculates the angles of the three axis
- * @param	GyrX: measured angular rate in x-axis
- * 			GyrY: measured angular rate in y-axis
- * 			GyrZ: measured angular rate in z-axis
- * 			t: time between two calculations
- **************************************************************************************
- */
+/******************************************************************************/
+/* Function: calculateAngle */
+/******************************************************************************/
+/*! \brief calculates the angles of the three axis
+ *
+ *
+ * \param[in] 	GyrX: measured angular rate in x-axis
+ * \param[in]	GyrY: measured angular rate in y-axis
+ * \param[in]	GyrZ: measured angular rate in z-axis
+ * \param[in]	t: time between two calculations
+ *
+ *
+ * \see Jordan McConnell, SparkFun Electronics
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ *
+ * \date 11.04.2014 Function created
+ *
+ *******************************************************************************/
+
 void calculateAngle(int16_t gyrValue, uint32_t t) {
 
-	float dt = (float) t / 1000;  // Convert from miliseconds to seconds
-	float gyrScaled;	// scaled angular rate
+	float dt = (float) t / 1000;  /* Convert from miliseconds to seconds */
+	float gyrScaled;	/* scaled angular rate */
 	float raw_yaw = 0;
 
 	/* calculate Runge Kutta value from gyroscope */
@@ -315,7 +446,7 @@ void calculateAngle(int16_t gyrValue, uint32_t t) {
 	/* calculate angular rate with offset and scale factor and make a linear drift compensation */
 	gyrScaled = (raw_yaw - gyrOffset) * gyrScale + driftyaw * dt;
 
-	yaw += gyrScaled * dt;  // Sum up the angle
+	yaw += gyrScaled * dt;  /* Sum up the angle */
 
 	/* Check, if the angle reached 360 degrees */
 	if (yaw >= 360) {
@@ -323,24 +454,25 @@ void calculateAngle(int16_t gyrValue, uint32_t t) {
 	} else if (yaw < 0) {
 		yaw += 360;
 	}
-
-
-
 }
 
+/* ****************************************************************************/
+/* End : calculateAngle */
+/* ****************************************************************************/
+
 /******************************************************************************/
-/*   Procedure  :   computeRungeKuttaNormal  	    											 		  */
+/*   Procedure  :   computeRungeKuttaNormal  	     */
 /******************************************************************************/
-/*!  \brief					Runge Kutta fourth order
+/*!  \brief	Runge Kutta fourth order
  *
- *	\param					rk: pointer on struct with the four last values
- *									CurrentValue: the current raw value, read from the gyroscope
+ *	\param	rk: pointer on struct with the four last values
+ *			CurrentValue: the current raw value, read from the gyroscope
  *
- *	\return					meant value
+ *	\return	meant value
  *
- *	\author					S.Briner
+ *	\author	S.Briner
  *
- *	\date						07.01.2013
+ *	\date	07.01.2013
  *
  ******************************************************************************/
 float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue) {
@@ -354,110 +486,6 @@ float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue) {
 
 	return rk->Prev;
 }
-
-/******************************************************************************/
-/* Function: GyroTask */
-/******************************************************************************/
-/*! \brief Gyro Task measures the angular rate and calculates the angle
- *
- * \author zursr1
- *
- * \version 0.0.1
- *
- * \date 11.04.2014 Function created
- *
- *
- *******************************************************************************/
-
-static void GyroTask(void* pvParameters) {
-
-	uint32_t t_start = 0;
-	uint32_t t_end = 0;
-	uint32_t t_delta = 0;
-	//char Buffer[4] = {0};
-
-	int16_t outGyr = 0;
-
-	t_start = xTaskGetTickCount();
-
-	calculateGyroOffsets();
-	calculateDrift();
-
-	/* for ever */
-	for (;;) {
-
-		//calc Drift here when message stillstanding arrived
-
-		vTaskDelay(10 / portTICK_RATE_MS);
-
-		outGyr = getGyrValues();
-
-		t_end = xTaskGetTickCount();
-
-		t_delta = t_end - t_start;
-		t_start = t_end;
-
-		calculateAngle(outGyr, t_delta);
-
-//		itoa((int) round(yaw), Buffer);
-//		USARTPrint(Buffer, strlen(Buffer) + 1);
-
-		//SWV_printfloat(yaw, 4);
-
-
-	}
-}
-
 /* ****************************************************************************/
-/* End : GyroTask */
+/* End : computeRungeKuttaNormal */
 /* ****************************************************************************/
-
-/**
- * @brief  This function sends numbers to the serial wire viewer.
- * @param  number: number to be displayed on SWV
- * @param  digits: number of digits after decimal point
- * @retval None
- */
-
-//void USARTPrint(const char *ToSend, unsigned char length) {
-//	unsigned int i;
-//
-//	/* Output a message  */
-//	for (i = 0; i < length; i++) {
-//		USART_SendData(USART1, (uint16_t) *ToSend++);
-//		/* Loop until the end of transmission */
-//		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
-//		}
-//	}
-//}
-//
-//// Eigenimplementation von itoa(int to ascii)
-//void itoa( int z, char* Buffer ){
-// int i = 0;
-// int j;
-// char tmp;
-// unsigned u;
-//
-// //Vorzeichen berücksichtigen
-// if( z < 0 ) {
-// Buffer[0] = '-';
-// Buffer++;
-// u = ( (unsigned)-(z+1) ) + 1;
-// }
-// else {
-// u = (unsigned)z;
-// }
-// //Konvertieren der Zeichen
-// do {
-// Buffer[i++] = '0' + u % 10;
-// u /= 10;
-// } while( u > 0 );
-//
-// //Zusammensetzen und spiegeln
-// for( j = 0; j < i / 2; ++j ) {
-// tmp = Buffer[j];
-// Buffer[j] = Buffer[i-j-1];
-// Buffer[i-j-1] = tmp;
-// }
-// Buffer[i] = '\0';
-//}

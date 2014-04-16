@@ -1,9 +1,12 @@
 /******************************************************************************/
 /*! \file ProcessTask.c
  ******************************************************************************
- * \brief Short description of the files function
+ * \brief Filters the distances out of the UART Message
  *
- * Function : More detailed description of the files function
+ * Function : gets the distance as well as the Tag and the Receiver ID from the
+ * 				UART Task, and reads out the measured distances from every Robot
+ * 				to the three Tags. If all three Tags are received, they are send
+ * 				to the Position Task
  *
  *
  * \author heimg1, zursr1
@@ -12,10 +15,6 @@
  *
  * \history 10.04.2014 File Created
  *
- *
- * \ingroup <group name> [<group name 2> <group name 3>]
- *
- * \todo If u have some todo's for the c-file, add it here
  *
  */
 /* ****************************************************************************/
@@ -35,37 +34,40 @@
 #include "RFCommTask.h"
 #include "configNavi.h"
 /* ------------------------- module data declaration -------------------------*/
-xQueueHandle msgqRobo1;
-xQueueHandle msgqRobo2;
-xQueueHandle msgqEnemy1;
-xQueueHandle msgqEnemy2;
-xQueueHandle msgqProcessRFGComm;
-xQueueSetHandle msgqSetProcessPosition;
+xQueueHandle msgqRobo1;		/* Message Queue to Position Task with own Robot data */
+xQueueHandle msgqRobo2;		/* Message Queue to Position Task with confederate Robot data */
+xQueueHandle msgqEnemy1;	/* Message Queue to Position Task with first Enemy data */
+xQueueHandle msgqEnemy2;	/* Message Queue to Position Task with second Enemy data */
+xQueueHandle msgqProcessRFGComm;	/* Message Queue to RFCommunication Task */
+xQueueSetHandle msgqSetProcessPosition;	/* Queue Set for all Message Queues to the Position Task */
 
-Position Robo1Pos;
-Position Robo2Pos;
-Position Enemy1Pos;
-Position Enemy2Pos;
+Position Robo1Pos;		/* Position data of own Robot */
+Position Robo2Pos;		/* Position data of confederate Robot */
+Position Enemy1Pos;		/* Position of first Enemy Robot */
+Position Enemy2Pos;		/* Position of second Enemy Robot */
 
-/* ID'2 von Tags */
+/* ID's of the Tags */
 static char Tag1[] = "P20";
 static char Tag2[] = "P21";
 static char Tag3[] = "P22";
 
-#ifndef SET_ROBO_BIG	// if the small Robot is activated
+/* ID's of the Receivers of own Robots */
+#ifndef SET_ROBO_BIG	/* if the small Robot is activated */
 static char Receiver1[] = "R42";
 static char Receiver2[] = "R43";
-#else	//if the big robot is activated
+#else	/* if the big robot is activated */
 static char Receiver1[] = "R41";
 static char Receiver2[] = "R42";
 
 #endif
-/*  */
+/* ID's of the Receivers of Enemy Robots */
 static char Receiver3[] = "R40";
 static char Receiver4[] = "R43";
 
-char UARTMsg[UARTBUFFERSIZE];	//Receive Buffer
+/* Receive Buffer for UART Message Queue*/
+char UARTMsg[UARTBUFFERSIZE];
 
+/* Number of Enemys and Confederate Robots */
 uint8_t nbrEnemys = 0;
 uint8_t nbrConfederate = 0;
 
@@ -138,38 +140,40 @@ void initProcessTask(void) {
  *******************************************************************************/
 void getrad(char *RecID, char *TagID, unsigned int *rad ) {
 
+	/* initalise used Parameters */
 	volatile unsigned char i = 0;
 	char value[4] = { 0, 0, 0, 0 };
 	uint32_t valueret = 0;
 	unsigned char Msgpos;
-	char Filterstr[9];		//Messagefilter
+	char Filterstr[9];		/* Messagefilter */
 
-	//create the Filterstring
+	/* create the Filterstring */
 	strcpy(Filterstr, RecID);
 	strcat(Filterstr, " ");
 	strcat(Filterstr, TagID);
 	strcat(Filterstr, " ");
 	strcat(Filterstr, "A");
 
-	//check if Filterstring is in the UARTMsg
+	/* check if Filterstring is in the UARTMsg */
 	if (strstr(UARTMsg, Filterstr) != NULL ) {
-		//read out the Position of the Distance into the String
+		/* read out the Position of the Distance into the String */
 		Msgpos = ((unsigned char) (strstr(UARTMsg, Filterstr) - UARTMsg))
 				+ sizeof(Filterstr);
 
-		//Solange kein Leerzeichen oder der Buffer fertig ist
+		/* read out the Message as long as there is no space or the end of Buffer isn't reached */
 		while ((UARTMsg[Msgpos] != ' ') || (Msgpos <= (UARTBUFFERSIZE - 1))) {
+
+			/* break condition */
 			if ((i > 3) || Msgpos > (UARTBUFFERSIZE - 4)) {
-				//Bei mehr als drei Zeichen abbrechen
 				break;
 			}
 			value[i] = UARTMsg[Msgpos + i];
 			i++;
 		}
 	}
-	//Filterstring zurücksetzten
+	/* set back the Filterstring */
 	memset(&Filterstr, 0, sizeof(Filterstr));
-	//Integer Wert der Distanz zurückgeben
+	/* converte the read out distance into a integer  */
 	valueret = atoi(value);
 	if ((valueret > 10) && (valueret < 3700)) {
 		*rad = valueret;
@@ -202,10 +206,10 @@ static void ProcessTask(void* pvParameters) {
 	/* for ever */
 	for (;;) {
 
-		// waiting for UART Messages
+		/* waiting for UART Messages */
 		xQueueReceive(msgqUARTProcess, &UARTMsg, portMAX_DELAY);
 
-		// get measured Distance out of the Message
+		/* get measured Distance out of the Message */
 		getrad(Receiver1, Tag1, &Robo1Pos.r1);
 		getrad(Receiver1, Tag2, &Robo1Pos.r2);
 		getrad(Receiver1, Tag3, &Robo1Pos.r3);
@@ -219,47 +223,47 @@ static void ProcessTask(void* pvParameters) {
 		getrad(Receiver4, Tag2, &Enemy2Pos.r2);
 		getrad(Receiver4, Tag3, &Enemy2Pos.r3);
 
-		// send measured Distances of Robo1 to the Position Task
+		/* send measured Distances of Robo1 to the Position Task */
 		if ((Robo1Pos.r1 != 0) && (Robo1Pos.r2 != 0) && (Robo1Pos.r3 != 0)) {
 
 			xQueueSend(msgqRobo1, &Robo1Pos, 0);
 
-			// reset the Distances
+			/* reset the Distances */
 			Robo1Pos.r1 = 0;
 			Robo1Pos.r2 = 0;
 			Robo1Pos.r3 = 0;
 
 		}
-		nbrConfederate = 1;
-		// send measured Distances of Robo2 to the Position Task
+
+		/* send measured Distances of Robo2 to the Position Task */
 		if ((Robo2Pos.r1 != 0) && (Robo2Pos.r2 != 0) && (Robo2Pos.r3 != 0) && (nbrConfederate == 1)) {
 
 			xQueueSend(msgqRobo2, &Robo2Pos, 0);
 
-			// reset the Distances
+			/* reset the Distances */
 			Robo2Pos.r1 = 0;
 			Robo2Pos.r2 = 0;
 			Robo2Pos.r3 = 0;
 
 		}
-		nbrEnemys = 2;
-		// send measured Distances of Enemy1 to the Position Task
+
+		/* send measured Distances of Enemy1 to the Position Task */
 		if ((Enemy1Pos.r1 != 0) && (Enemy1Pos.r2 != 0) && (Enemy1Pos.r3 != 0) && (nbrEnemys >= 1)) {
 
 			xQueueSend(msgqEnemy1, &Enemy1Pos, 0);
 
-			// reset the Distances
+			/* reset the Distances */
 			Enemy1Pos.r1 = 0;
 			Enemy1Pos.r2 = 0;
 			Enemy1Pos.r3 = 0;
 
 		}
-		// send measured Distances of Enemy2 to the Position Task
+		/* send measured Distances of Enemy2 to the Position Task */
 		if ((Enemy2Pos.r1 != 0) && (Enemy2Pos.r2 != 0) && (Enemy2Pos.r3 != 0) && (nbrEnemys == 2)) {
 
 			xQueueSend(msgqEnemy2, &Enemy2Pos, 0);
 
-			// reset the Distances
+			/* reset the Distances */
 			Enemy2Pos.r1 = 0;
 			Enemy2Pos.r2 = 0;
 			Enemy2Pos.r3 = 0;

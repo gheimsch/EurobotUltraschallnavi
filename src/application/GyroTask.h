@@ -5,13 +5,9 @@
  ******************************************************************************
  * \file	GyroTask.h
  ******************************************************************************
- * \brief Short description of the files function
+ * \brief Reads out the angulare rate of the Gyro and calculates the direction
+ * 			of the Robot
  *
- *
- * Function : More detailed description of the files function
- *
- * Procedures : ExportedFunction1()
- * ExportedFunction2()...
  *
  * \author heimg1, zursr1
  *
@@ -19,10 +15,6 @@
  *
  * \history 10.04.2014 File Created
  *
- *
- * \ingroup <group name> [<group name 2> <group name 3>]
- *
- * \todo If u have some todo's for the h-file, add it here
  *
  */
 /* ****************************************************************************/
@@ -39,7 +31,7 @@
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
-extern float yaw;		// measured angle
+extern float yaw;		/* measured angle (used in Position Task) */
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initGyroTask(void);
 extern void initGyr(void);

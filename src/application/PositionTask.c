@@ -2,14 +2,18 @@
  ******************************************************************************
  * \file	PositionTask.c
  ******************************************************************************
- * \brief Short description of the files function
+ * \brief Calculates the Position of the Robots and sends them via CAN to the
+ * 			System
+ *
+ * Function : Gets the measured distances of the Process Task via Message Queue.
+ * 				In every Message is the Type of Robot (own, Enemy) as well as the
+ * 				three distances from the Tags to the Receiver. With these distances
+ * 				we calculate with Triangulation the x-component and the y-component
+ * 				of the robot. The own Robot is updated with the direction (yaw of
+ * 				the Gyro Task).
  *
  *
- * Function : More detailed description of the files function
- *
- * Procedures : 	vDefaultTask(void*)
- * 				InitDefaultTask()
- *              	function3()...
+ * Procedures :
  *
  * \author zursr1,heimg1
  *
@@ -17,10 +21,6 @@
  *
  * \history 25.03.2014 File Created
  *
- *
- * \ingroup <group name> [<group name 2> <group name 3>]
- *
- * \todo If u have some todo's for the c-file, add it here
  *
  */
 /* ****************************************************************************/
@@ -58,9 +58,9 @@ uint8_t team = tbd;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
+static void PositionTask(void* pvParameters);
 void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 		int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3, Position * pos);
-static void PositionTask(void* pvParameters);
 void posRobo1Request(uint16_t id, CAN_data_t* data);
 void posRobo2Request(uint16_t id, CAN_data_t* data);
 void posEnemy1Request(uint16_t id, CAN_data_t* data);
@@ -115,36 +115,165 @@ void initPositionTask(void) {
 /* End : initPositionTask */
 /* ****************************************************************************/
 
-//// Eigenimplementation von itoa(int to ascii)
-//void itoa( int z, char* Buffer ){
-//  int i = 0;
-//  int j;
-//  char tmp;
-//  unsigned u;
-//
-//    //Vorzeichen berücksichtigen
-//    if( z < 0 ) {
-//      Buffer[0] = '-';
-//      Buffer++;
-//      u = ( (unsigned)-(z+1) ) + 1;
-//    }
-//    else {
-//      u = (unsigned)z;
-//    }
-//    //Konvertieren der Zeichen
-//    do {
-//      Buffer[i++] = '0' + u % 10;
-//      u /= 10;
-//    } while( u > 0 );
-//
-//    //Zusammensetzen und spiegeln
-//    for( j = 0; j < i / 2; ++j ) {
-//      tmp = Buffer[j];
-//      Buffer[j] = Buffer[i-j-1];
-//      Buffer[i-j-1] = tmp;
-//    }
-//    Buffer[i] = '\0';
-//}
+/******************************************************************************/
+/* Function: PositionTask */
+/******************************************************************************/
+/*! \brief Position Task calculates the positions and reads out the angle to
+ * 		   send the data to the CAN gatekeeper
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 11.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void PositionTask(void* pvParameters) {
+
+
+	team = yellow;
+
+	/* for ever */
+	for (;;) {
+
+		/* check if message is in QueueSet and store active Message in the Member */
+		xActivatedMember = xQueueSelectFromSet(msgqSetProcessPosition,
+				portMAX_DELAY);
+
+		/* data of own Robot arrived */
+		if (xActivatedMember == msgqRobo1) {
+
+			/* get the distances */
+			xQueueReceive( xActivatedMember, &Robo1, 0);
+
+			/* calculate the position for team red */
+			if (team == red) {
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo1.r1,
+						Robo1.r2, Robo1.r3, &Robo1);
+
+				/* compensate the measured values */
+				Robo1.x = Robo1.x + compensateXaxisRobored(Robo1.x);
+				Robo1.y = Robo1.y + compensateYaxisRobored(Robo1.x, Robo1.y);
+			}
+
+			/* calculate the position for team yellow */
+			if (team == yellow) {
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Robo1.r1, Robo1.r2, Robo1.r3, &Robo1);
+
+				/* compensate the measured values */
+				Robo1.x = Robo1.x + compensateXaxisRoboyellow(Robo1.x);
+				Robo1.y = Robo1.y + compensateYaxisRoboyellow(Robo1.x, Robo1.y);
+			}
+
+			/* get the angle */
+			Robo1.angle = yaw;
+
+		}
+
+		/* data of other confederate Robot arrived */
+		if (xActivatedMember == msgqRobo2) {
+
+			/* get the distances */
+			xQueueReceive( xActivatedMember, &Robo2, 0);
+
+			/* calculate the position for team red */
+			if (team == red) {
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo2.r1,
+						Robo2.r2, Robo2.r3, &Robo2);
+
+				/* compensate the measured values */
+				Robo2.x = Robo2.x + compensateXaxisRobored(Robo2.x);
+				Robo2.y = Robo2.y + compensateYaxisRobored(Robo2.x, Robo2.y);
+
+			}
+
+			/* calculate the position for team yellow */
+			if (team == yellow) {
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Robo2.r1, Robo2.r2, Robo2.r3, &Robo2);
+
+				/* compensate the measured values */
+				Robo2.x = Robo2.x + compensateXaxisRoboyellow(Robo2.x);
+				Robo2.y = Robo2.y + compensateYaxisRoboyellow(Robo2.x, Robo2.y);
+			}
+
+		}
+
+		/* data of the first Enemy arrived */
+		if (xActivatedMember == msgqEnemy1) {
+
+			/* get the distances */
+			xQueueReceive( xActivatedMember, &Enemy1, 0);
+
+			/* calculate the position for team red */
+			if (team == red) {
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy1.r1,
+						Enemy1.r2, Enemy1.r3, &Enemy1);
+
+				/* compensate the measured values */
+				Enemy1.x = Enemy1.x + compensateXaxisEnemyred(Enemy1.x);
+				Enemy1.y = Enemy1.y
+						+ compensateYaxisEnemyred(Enemy1.x, Enemy1.y);
+			}
+
+			/* calculate the position for team yellow */
+			if (team == yellow) {
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
+
+				/* compensate the measured values */
+				Enemy1.x = Enemy1.x + compensateXaxisEnemyyellow(Enemy1.x);
+				Enemy1.y = Enemy1.y
+						+ compensateYaxisEnemyyellow(Enemy1.x, Enemy1.y);
+			}
+
+		}
+
+		/* data of the second Enemy arrived */
+		if (xActivatedMember == msgqEnemy2) {
+
+			/* get the distances */
+			xQueueReceive( xActivatedMember, &Enemy2, 0);
+
+			/* calculate the position for team red */
+			if (team == red) {
+				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
+						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy2.r1,
+						Enemy2.r2, Enemy2.r3, &Enemy2);
+
+				/* compensate the measured values */
+				Enemy2.x = Enemy2.x + compensateXaxisEnemyred(Enemy2.x);
+				Enemy2.y = Enemy2.y
+						+ compensateYaxisEnemyred(Enemy2.x, Enemy2.y);
+			}
+
+			/* calculate the position for team yellow */
+			if (team == yellow) {
+				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
+						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
+						Enemy2.r1, Enemy2.r2, Enemy2.r3, &Enemy2);
+
+				/* compensate the measured values */
+				Enemy2.x = Enemy2.x + compensateXaxisEnemyyellow(Enemy2.x);
+				Enemy2.y = Enemy2.y
+						+ compensateYaxisEnemyyellow(Enemy2.x, Enemy2.y);
+			}
+		}
+	}
+}
+/* ****************************************************************************/
+/* End : PositionTask */
+/* ****************************************************************************/
+
 /******************************************************************************/
 /* Function: Trilateration2D */
 /******************************************************************************/
@@ -169,13 +298,13 @@ void initPositionTask(void) {
  *
  * \date 10.04.2014 Function created
  *
- * \todo Comment parameters better
  *
  *******************************************************************************/
 
 void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 		int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3, Position * pos) {
 
+	/* initialise the parameters for the calculation */
 	int32_t xn[2][2];
 	int32_t yn[2][2];
 	double_t d[2][2];
@@ -201,175 +330,31 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	yn[0][1] = xn[0][0];
 	yn[1][1] = xn[1][0];
 
-	//Inverse der 2D-Matrix d
+	/* Inverse of the 2D-Matrix d */
 	detd = d[0][0] * d[1][1] - d[0][1] * d[1][0];
 	tmp = d[0][0];
 	d[0][0] = d[1][1] * 1 / detd;
 	d[1][1] = tmp * 1 / detd;
 	d[0][1] = -d[0][1] * 1 / detd;
 	d[1][0] = -d[1][0] * 1 / detd;
-	//Multiplizieren der zwei Matrizen
+	/* multiply the Matrix xn with d */
 	x[0][0] = xn[0][0] * d[0][0] + xn[0][1] * d[1][0];
 	x[0][1] = xn[0][0] * d[0][1] + xn[0][1] * d[1][1];
 	x[1][0] = xn[1][0] * d[0][0] + xn[1][1] * d[1][0];
 	x[1][1] = xn[1][0] * d[0][1] + xn[1][1] * d[1][1];
-	//X-Position ermitteln
+	/* calculate the x-Axis */
 	pos->x = x[0][0] * x[1][1] - x[0][1] * x[1][0];
-	//Multiplizieren der zwei Matrizen
+	/* multiply the Matrix yn with d */
 	y[0][0] = yn[0][0] * d[0][0] + yn[0][1] * d[1][0];
 	y[0][1] = yn[0][0] * d[0][1] + yn[0][1] * d[1][1];
 	y[1][0] = yn[1][0] * d[0][0] + yn[1][1] * d[1][0];
 	y[1][1] = yn[1][0] * d[0][1] + yn[1][1] * d[1][1];
-	//Y-Position ermitteln
+	/* calculate the y-Axis */
 	pos->y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
 }
 /******************************************************************************/
 /* End: Trilateration2D */
 /******************************************************************************/
-
-/******************************************************************************/
-/* Function: PositionTask */
-/******************************************************************************/
-/*! \brief Position Task calculates the positions and reads out the angle to
- * 		   send the data to the CAN gatekeeper
- *
- * \author zursr1
- *
- * \version 0.0.1
- *
- * \date 11.04.2014 Function created
- *
- *
- *******************************************************************************/
-
-static void PositionTask(void* pvParameters) {
-
-
-	team = yellow;
-
-	/* for ever */
-	for (;;) {
-
-		xActivatedMember = xQueueSelectFromSet(msgqSetProcessPosition,
-				portMAX_DELAY);
-
-		if (xActivatedMember == msgqRobo1) {
-
-			// get the distances
-			xQueueReceive( xActivatedMember, &Robo1, 0);
-
-			// calculate the position
-			if (team == red) {
-				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
-						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo1.r1,
-						Robo1.r2, Robo1.r3, &Robo1);
-
-				/* compensate the measured values */
-				Robo1.x = Robo1.x + compensateXaxisRobored(Robo1.x);
-				Robo1.y = Robo1.y + compensateYaxisRobored(Robo1.x, Robo1.y);
-			}
-			if (team == yellow) {
-				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
-						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
-						Robo1.r1, Robo1.r2, Robo1.r3, &Robo1);
-
-				/* compensate the measured values */
-				Robo1.x = Robo1.x + compensateXaxisRoboyellow(Robo1.x);
-				Robo1.y = Robo1.y + compensateYaxisRoboyellow(Robo1.x, Robo1.y);
-			}
-
-			/* get the angle */
-			Robo1.angle = yaw;
-
-		}
-		if (xActivatedMember == msgqRobo2) {
-
-			// get the distances
-			xQueueReceive( xActivatedMember, &Robo2, 0);
-
-			// calculate the position
-			if (team == red) {
-				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
-						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo2.r1,
-						Robo2.r2, Robo2.r3, &Robo2);
-
-				/* compensate the measured values */
-				Robo2.x = Robo2.x + compensateXaxisRobored(Robo2.x);
-				Robo2.y = Robo2.y + compensateYaxisRobored(Robo2.x, Robo2.y);
-
-			}
-			if (team == yellow) {
-				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
-						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
-						Robo2.r1, Robo2.r2, Robo2.r3, &Robo2);
-
-				/* compensate the measured values */
-				Robo2.x = Robo2.x + compensateXaxisRoboyellow(Robo2.x);
-				Robo2.y = Robo2.y + compensateYaxisRoboyellow(Robo2.x, Robo2.y);
-			}
-
-		}
-		if (xActivatedMember == msgqEnemy1) {
-
-			// get the distances
-			xQueueReceive( xActivatedMember, &Enemy1, 0);
-
-			// calculate the position
-			if (team == red) {
-				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
-						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy1.r1,
-						Enemy1.r2, Enemy1.r3, &Enemy1);
-
-				/* compensate the measured values */
-				Enemy1.x = Enemy1.x + compensateXaxisEnemyred(Enemy1.x);
-				Enemy1.y = Enemy1.y
-						+ compensateYaxisEnemyred(Enemy1.x, Enemy1.y);
-			}
-			if (team == yellow) {
-				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
-						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
-						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
-
-				/* compensate the measured values */
-				Enemy1.x = Enemy1.x + compensateXaxisEnemyyellow(Enemy1.x);
-				Enemy1.y = Enemy1.y
-						+ compensateYaxisEnemyyellow(Enemy1.x, Enemy1.y);
-			}
-			Enemy1.angle = yaw;
-		}
-
-		if (xActivatedMember == msgqEnemy2) {
-
-			// get the distances
-			xQueueReceive( xActivatedMember, &Enemy2, 0);
-
-			// calculate the position
-			if (team == red) {
-				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
-						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Enemy2.r1,
-						Enemy2.r2, Enemy2.r3, &Enemy2);
-
-				/* compensate the measured values */
-				Enemy2.x = Enemy2.x + compensateXaxisEnemyred(Enemy2.x);
-				Enemy2.y = Enemy2.y
-						+ compensateYaxisEnemyred(Enemy2.x, Enemy2.y);
-			}
-			if (team == yellow) {
-				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
-						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
-						Enemy2.r1, Enemy2.r2, Enemy2.r3, &Enemy2);
-
-				/* compensate the measured values */
-				Enemy2.x = Enemy2.x + compensateXaxisEnemyyellow(Enemy2.x);
-				Enemy2.y = Enemy2.y
-						+ compensateYaxisEnemyyellow(Enemy2.x, Enemy2.y);
-			}
-		}
-	}
-}
-/* ****************************************************************************/
-/* End : PositionTask */
-/* ****************************************************************************/
 
 /******************************************************************************/
 /* Function: posRobo1Request */
@@ -492,9 +477,11 @@ void posEnemy2Request(uint16_t id, CAN_data_t* data) {
 
 float compensateXaxisRobored(float x) {
 
+	/* Parameter of the Polynom */
 	float a = -0.0801;
 	float b = 103.7;
 
+	/* Compensationpolynom */
 	return a * x + b;
 }
 
@@ -525,12 +512,14 @@ float compensateXaxisRobored(float x) {
 
 float compensateYaxisRobored(float x, float y) {
 
+	/* Parameter of the Polynom */
 	float a = -0.04324;
 	float b = -0.1853;
 	float c = 0.00004126;
 	float d = 0.00002256;
 	float e = 134.8;
 
+	/* Compensationpolynom */
 	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
 }
 
@@ -541,7 +530,7 @@ float compensateYaxisRobored(float x, float y) {
 /******************************************************************************/
 /* Function: compensateXaxisEnemyred */
 /******************************************************************************/
-/*! \brief compensates the Error of the x-Axis of our Enemys with a linear
+/*! \brief compensates the Error of the x-Axis of our Enemy's with a linear
  * 		   function
  *
  * \param[in] x measured x-Axis
@@ -559,9 +548,11 @@ float compensateYaxisRobored(float x, float y) {
 
 float compensateXaxisEnemyred(float x) {
 
+	/* Parameter of the Polynom */
 	float a = -0.08;
 	float b = 118.4;
 
+	/* Compensationpolynom */
 	return a * x + b;
 }
 
@@ -572,7 +563,7 @@ float compensateXaxisEnemyred(float x) {
 /******************************************************************************/
 /* Function: compensateYaxisEnemyred */
 /******************************************************************************/
-/*! \brief compensates the Error of the y-Axis of our Enemys with a polynomical
+/*! \brief compensates the Error of the y-Axis of our Enemy's with a polynomical
  * 		   function
  *
  *
@@ -592,12 +583,14 @@ float compensateXaxisEnemyred(float x) {
 
 float compensateYaxisEnemyred(float x, float y) {
 
+	/* Parameter of the Polynom */
 	float a = -0.04328;
 	float b = -0.1443;
 	float c = 0.00004424;
 	float d = 0.00000723;
 	float e = 112.2;
 
+	/* Compensationpolynom */
 	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
 }
 
@@ -608,7 +601,7 @@ float compensateYaxisEnemyred(float x, float y) {
 /******************************************************************************/
 /* Function: compensateXaxisRoboyellow */
 /******************************************************************************/
-/*! \brief compensates the Error of the x-Axis of our own Robot with a linear
+/*! \brief compensates the Error of the x-Axis of our Robot with a linear
  * 		   function
  *
  * \param[in] x measured x-Axis
@@ -624,11 +617,13 @@ float compensateYaxisEnemyred(float x, float y) {
  *
  *******************************************************************************/
 
-float compensateXaxisEnemyyellow(float x) {
+float compensateXaxisRoboyellow(float x) {
 
+	/* Parameter of the Polynom */
 	float a = -0.0756;
-	float b = 145.7;
+	float b = 131;
 
+	/* Compensationpolynom */
 	return a * x + b;
 }
 
@@ -657,14 +652,16 @@ float compensateXaxisEnemyyellow(float x) {
  *
  *******************************************************************************/
 
-float compensateYaxisEnemyyellow(float x, float y) {
+float compensateYaxisRoboyellow(float x, float y) {
 
-	float a = 0.04147;
-	float b = -0.04321;
-	float c = -0.00004131;
-	float d = 0.00001893;
-	float e = 18.28;
+	/* Parameter of the Polynom */
+	float a = 0.0331;
+	float b = -0.02139;
+	float c = -0.00003513;
+	float d = 0.000004503;
+	float e = 34.35;
 
+	/* Compensationpolynom */
 	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
 }
 
@@ -675,7 +672,7 @@ float compensateYaxisEnemyyellow(float x, float y) {
 /******************************************************************************/
 /* Function: compensateXaxisEnemyyellow */
 /******************************************************************************/
-/*! \brief compensates the Error of the x-Axis of our Enemys Robot with a linear
+/*! \brief compensates the Error of the x-Axis of our Enemy's Robot with a linear
  * 		   function
  *
  * \param[in] x measured x-Axis
@@ -691,11 +688,13 @@ float compensateYaxisEnemyyellow(float x, float y) {
  *
  *******************************************************************************/
 
-float compensateXaxisRoboyellow(float x) {
+float compensateXaxisEnemyyellow(float x) {
 
+	/* Parameter of the Polynom */
 	float a = -0.0756;
-	float b = 131;
+	float b = 145.7;
 
+	/* Compensationpolynom */
 	return a * x + b;
 }
 
@@ -706,7 +705,7 @@ float compensateXaxisRoboyellow(float x) {
 /******************************************************************************/
 /* Function: compensateYaxisEnemyyellow */
 /******************************************************************************/
-/*! \brief compensates the Error of the y-Axis of our Enemys Robot with a polynomical
+/*! \brief compensates the Error of the y-Axis of our Enemy's Robot with a polynomical
  * 		   function
  *
  *
@@ -724,14 +723,16 @@ float compensateXaxisRoboyellow(float x) {
  *
  *******************************************************************************/
 
-float compensateYaxisRoboyellow(float x, float y) {
+float compensateYaxisEnemyyellow(float x, float y) {
 
-	float a = 0.0331;
-	float b = -0.02139;
-	float c = -0.00003513;
-	float d = 0.000004503;
-	float e = 34.35;
+	/* Parameter of the Polynom */
+	float a = 0.04147;
+	float b = -0.04321;
+	float c = -0.00004131;
+	float d = 0.00001893;
+	float e = 18.28;
 
+	/* Compensationpolynom */
 	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
 }
 

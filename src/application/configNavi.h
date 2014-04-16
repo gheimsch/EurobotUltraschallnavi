@@ -23,13 +23,14 @@
 #define SET_ROBO_BIG
 
 #ifndef SET_ROBO_BIG
-// small robot
+/* small robot */
 #define ROBO_BIG 	( 0 )
-// big robot
+/* big robot */
 #else
 #define ROBO_BIG 	( 1 )
 #endif
 
+/* Tag Positions for the red Team  */
 #define X_TAG20_RED			( 3060 )
 #define Y_TAG20_RED			( 1000 )
 #define X_TAG21_RED			( -60 )
@@ -37,6 +38,7 @@
 #define X_TAG22_RED			( -60 )
 #define Y_TAG22_RED			( -60 )
 
+/* Tag Positions for the yellow Team  */
 #define X_TAG20_YELLOW		( -60 )
 #define Y_TAG20_YELLOW		( 1000 )
 #define X_TAG21_YELLOW		( 3060 )
@@ -44,6 +46,7 @@
 #define X_TAG22_YELLOW		( 3060 )
 #define Y_TAG22_YELLOW		( 2060 )
 
+/* size of the Playfield */
 #define XPLAYFIELD			( 3000 )
 #define YPLAYFIELD			( 2000 )
 /* ----------------------- module constant declaration -----------------------*/
@@ -59,4 +62,3 @@
 /* ****************************************************************************/
 
 #endif /* CONVIGNAVI_H_ */
-
