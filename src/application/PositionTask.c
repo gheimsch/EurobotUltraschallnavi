@@ -58,15 +58,17 @@ uint8_t team = tbd;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
-void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1,
-		int32_t y2, int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
-		Position * pos);
+void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
+		int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3, Position * pos);
 static void PositionTask(void* pvParameters);
 void posRobo1Request(uint16_t id, CAN_data_t* data);
 void posRobo2Request(uint16_t id, CAN_data_t* data);
 void posEnemy1Request(uint16_t id, CAN_data_t* data);
 void posEnemy2Request(uint16_t id, CAN_data_t* data);
-
+unsigned int compensateXaxisRobo(float x);
+unsigned int compensateYaxisRobo(float x, float y);
+unsigned int compensateXaxisEnemy(float x);
+unsigned int compensateYaxisEnemy(float x, float y);
 /* ****************************************************************************/
 /* End Header : Trilateration.c												  */
 /* ****************************************************************************/
@@ -167,9 +169,8 @@ void initPositionTask(void) {
  *
  *******************************************************************************/
 
-void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1,
-		int32_t y2, int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3,
-		Position * pos) {
+void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
+		int32_t y3, uint16_t r1, uint16_t r2, uint16_t r3, Position * pos) {
 
 	int32_t xn[2][2];
 	int32_t yn[2][2];
@@ -265,6 +266,10 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Robo1.r1, Robo1.r2, Robo1.r3, &Robo1);
 			}
+
+			/* compensate the measured values */
+			Robo1.x = Robo1.x + compensateXaxisRobo(Robo1.x);
+			Robo1.y = Robo1.y + compensateYaxisRobo(Robo1.x, Robo1.y);
 			Robo1.angle = yaw;
 
 		}
@@ -278,13 +283,17 @@ static void PositionTask(void* pvParameters) {
 				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
 						Y_TAG20_RED, Y_TAG21_RED, Y_TAG22_RED, Robo2.r1,
 						Robo2.r2, Robo2.r3, &Robo2);
+
 			}
 			if (team == yellow) {
 				Trilateration2D(X_TAG20_YELLOW, X_TAG21_YELLOW, X_TAG22_YELLOW,
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Robo2.r1, Robo2.r2, Robo2.r3, &Robo2);
 			}
-			Robo2.angle = yaw; //TODO clean
+
+			/* compensate the measured values */
+			Robo2.x = Robo2.x + compensateXaxisRobo(Robo2.x);
+			Robo2.y = Robo2.y + compensateYaxisRobo(Robo2.x, Robo2.y);
 
 		}
 		if (xActivatedMember == msgqEnemy1) {
@@ -303,7 +312,10 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
 			}
-			Enemy1.angle = yaw; //TODO clean
+
+			/* compensate the measured values */
+			Enemy1.x = Enemy1.x + compensateXaxisEnemy(Enemy1.x);
+			Enemy1.y = Enemy1.y + compensateYaxisEnemy(Enemy1.x, Enemy1.y);
 		}
 
 		if (xActivatedMember == msgqEnemy2) {
@@ -322,7 +334,10 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Enemy2.r1, Enemy2.r2, Enemy2.r3, &Enemy2);
 			}
-			Enemy2.angle = yaw; //TODO clean
+
+			/* compensate the measured values */
+			Enemy2.x = Enemy2.x + compensateXaxisEnemy(Enemy2.x);
+			Enemy2.y = Enemy2.y + compensateYaxisEnemy(Enemy2.x, Enemy2.y);
 		}
 	}
 }
@@ -428,6 +443,140 @@ void posEnemy2Request(uint16_t id, CAN_data_t* data) {
 
 /* ****************************************************************************/
 /* End : posEnemy2Request */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateXaxisRobo */
+/******************************************************************************/
+/*! \brief compensates the Error of the x-Axis of our Robots with a linear
+ * 		   function
+ *
+ * \param[in] x measured x-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+unsigned int compensateXaxisRobo(float x) {
+
+	float a = -0.756;
+	float b = 131;
+
+	return a * x + b;
+}
+
+/* ****************************************************************************/
+/* End : compensateXaxisRobo */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateYaxisRobo */
+/******************************************************************************/
+/*! \brief compensates the Error of the y-Axis of our Robots with a polynomical
+ * 		   function
+ *
+ *
+ * \param[in] x measured x-Axis
+ * \param[in] y measured y-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+unsigned int compensateYaxisRobo(float x, float y) {
+
+	float a = 0.0331;
+	float b = -0.02139;
+	float c = -0.00003513;
+	float d = 0.000004503;
+	float e = 34.35;
+
+	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
+}
+
+/* ****************************************************************************/
+/* End : compensateYaxisRobo */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateXaxisEnemy */
+/******************************************************************************/
+/*! \brief compensates the Error of the x-Axis of our Enemys with a linear
+ * 		   function
+ *
+ * \param[in] x measured x-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+unsigned int compensateXaxisEnemy(float x) {
+
+	float a = -0.756;
+	float b = 145.7;
+
+	return a * x + b;
+}
+
+/* ****************************************************************************/
+/* End : compensateXaxisEnemy */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: compensateYaxisEnemy */
+/******************************************************************************/
+/*! \brief compensates the Error of the y-Axis of our Enemys with a polynomical
+ * 		   function
+ *
+ *
+ * \param[in] x measured x-Axis
+ * \param[in] y measured y-Axis
+ *
+ * \return compensation value
+ *
+ * \author zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 16.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+unsigned int compensateYaxisEnemy(float x, float y) {
+
+	float a = 0.04147;
+	float b = -0.04321;
+	float c = -0.00004131;
+	float d = 0.00001893;
+	float e = 18.28;
+
+	return a * x + b * y + c * x * y + d * pow(y, 2) + e;
+}
+
+/* ****************************************************************************/
+/* End : compensateYaxisEnemy */
 /* ****************************************************************************/
 
 /*******************************************************************************
