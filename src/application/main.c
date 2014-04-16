@@ -43,6 +43,7 @@
 #include "SyncTask.h"
 #include "UARTPeripherial.h"
 #include "ProcessTask.h"
+#include "RFCommTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
 
@@ -80,9 +81,14 @@ int main(void) {
 
 	initGyroTask();
 	initUARTPeripherial();
+//	initRFCommTask();
 	initProcessTask();
 	initPositionTask();
-    USART_SendData(USART1,'A');
+    //USART_SendData(USART1,'A');
+//	while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET){
+//		;
+//	}
+//    SendRFMsg("T&[Hello World]");
 
     /* Application initializations */
     initCANGatekeeper(); /* have to the last initialisation modul! */

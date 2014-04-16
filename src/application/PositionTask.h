@@ -43,7 +43,6 @@ extern uint8_t team;
 
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initPositionTask(void);
-extern void initRFComm(void);
 
 /* ****************************************************************************/
 /* End Header : PositionTask.h												  */

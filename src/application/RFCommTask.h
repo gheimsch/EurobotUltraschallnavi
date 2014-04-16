@@ -32,7 +32,7 @@
 #define RFCOMMTASK_STACK_SIZE	configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
 #define RFCOMMTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
 
-#define RFCOMMBUFFERSIZE		116								/*!< size of the RF Buffer */
+#define RFCOMMBUFFERSIZE		35								/*!< size of the RF Buffer */
 
 #define RF_QUEUE_LENGTH			( 10 ) 							/*!< Length of the Message Queue */
 #define RF_ITEM_SIZE			( RFCOMMBUFFERSIZE ) 			/*!< Item size of the Elements in the Message Queue */

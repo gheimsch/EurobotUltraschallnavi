@@ -65,10 +65,10 @@ void posRobo1Request(uint16_t id, CAN_data_t* data);
 void posRobo2Request(uint16_t id, CAN_data_t* data);
 void posEnemy1Request(uint16_t id, CAN_data_t* data);
 void posEnemy2Request(uint16_t id, CAN_data_t* data);
-unsigned int compensateXaxisRobo(float x);
-unsigned int compensateYaxisRobo(float x, float y);
-unsigned int compensateXaxisEnemy(float x);
-unsigned int compensateYaxisEnemy(float x, float y);
+float compensateXaxisRobo(float x);
+float compensateYaxisRobo(float x, float y);
+float compensateXaxisEnemy(float x);
+float compensateYaxisEnemy(float x, float y);
 /* ****************************************************************************/
 /* End Header : Trilateration.c												  */
 /* ****************************************************************************/
@@ -464,9 +464,9 @@ void posEnemy2Request(uint16_t id, CAN_data_t* data) {
  *
  *******************************************************************************/
 
-unsigned int compensateXaxisRobo(float x) {
+float compensateXaxisRobo(float x) {
 
-	float a = -0.756;
+	float a = -0.0756;
 	float b = 131;
 
 	return a * x + b;
@@ -497,7 +497,7 @@ unsigned int compensateXaxisRobo(float x) {
  *
  *******************************************************************************/
 
-unsigned int compensateYaxisRobo(float x, float y) {
+float compensateYaxisRobo(float x, float y) {
 
 	float a = 0.0331;
 	float b = -0.02139;
@@ -531,9 +531,9 @@ unsigned int compensateYaxisRobo(float x, float y) {
  *
  *******************************************************************************/
 
-unsigned int compensateXaxisEnemy(float x) {
+float compensateXaxisEnemy(float x) {
 
-	float a = -0.756;
+	float a = -0.0756;
 	float b = 145.7;
 
 	return a * x + b;
@@ -564,7 +564,7 @@ unsigned int compensateXaxisEnemy(float x) {
  *
  *******************************************************************************/
 
-unsigned int compensateYaxisEnemy(float x, float y) {
+float compensateYaxisEnemy(float x, float y) {
 
 	float a = 0.04147;
 	float b = -0.04321;
