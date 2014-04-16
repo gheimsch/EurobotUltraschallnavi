@@ -91,8 +91,8 @@ float getTempValue(void);
 void calculateAngle(int16_t, uint32_t);
 float computeRungeKuttaNormal(RungeKutta *rk, float CurrentValue);
 static void GyroTask(void* pvParameters);
-void USARTPrint(const char *ToSend, unsigned char length);
-void itoa( int z, char* Buffer );
+//void USARTPrint(const char *ToSend, unsigned char length);
+//void itoa( int z, char* Buffer );
 /* ****************************************************************************/
 /* End Header : GyroTask.c													  */
 /* ****************************************************************************/
@@ -374,7 +374,7 @@ static void GyroTask(void* pvParameters) {
 	uint32_t t_start = 0;
 	uint32_t t_end = 0;
 	uint32_t t_delta = 0;
-	char Buffer[4] = {0};
+	//char Buffer[4] = {0};
 
 	int16_t outGyr = 0;
 
@@ -399,8 +399,8 @@ static void GyroTask(void* pvParameters) {
 
 		calculateAngle(outGyr, t_delta);
 
-		itoa((int) round(yaw), Buffer);
-		USARTPrint(Buffer, strlen(Buffer) + 1);
+//		itoa((int) round(yaw), Buffer);
+//		USARTPrint(Buffer, strlen(Buffer) + 1);
 
 		//SWV_printfloat(yaw, 4);
 
@@ -419,45 +419,45 @@ static void GyroTask(void* pvParameters) {
  * @retval None
  */
 
-void USARTPrint(const char *ToSend, unsigned char length) {
-	unsigned int i;
-
-	/* Output a message  */
-	for (i = 0; i < length; i++) {
-		USART_SendData(USART1, (uint16_t) *ToSend++);
-		/* Loop until the end of transmission */
-		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
-		}
-	}
-}
-
-// Eigenimplementation von itoa(int to ascii)
-void itoa( int z, char* Buffer ){
- int i = 0;
- int j;
- char tmp;
- unsigned u;
-
- //Vorzeichen berücksichtigen
- if( z < 0 ) {
- Buffer[0] = '-';
- Buffer++;
- u = ( (unsigned)-(z+1) ) + 1;
- }
- else {
- u = (unsigned)z;
- }
- //Konvertieren der Zeichen
- do {
- Buffer[i++] = '0' + u % 10;
- u /= 10;
- } while( u > 0 );
-
- //Zusammensetzen und spiegeln
- for( j = 0; j < i / 2; ++j ) {
- tmp = Buffer[j];
- Buffer[j] = Buffer[i-j-1];
- Buffer[i-j-1] = tmp;
- }
- Buffer[i] = '\0';
-}
+//void USARTPrint(const char *ToSend, unsigned char length) {
+//	unsigned int i;
+//
+//	/* Output a message  */
+//	for (i = 0; i < length; i++) {
+//		USART_SendData(USART1, (uint16_t) *ToSend++);
+//		/* Loop until the end of transmission */
+//		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
+//		}
+//	}
+//}
+//
+//// Eigenimplementation von itoa(int to ascii)
+//void itoa( int z, char* Buffer ){
+// int i = 0;
+// int j;
+// char tmp;
+// unsigned u;
+//
+// //Vorzeichen berücksichtigen
+// if( z < 0 ) {
+// Buffer[0] = '-';
+// Buffer++;
+// u = ( (unsigned)-(z+1) ) + 1;
+// }
+// else {
+// u = (unsigned)z;
+// }
+// //Konvertieren der Zeichen
+// do {
+// Buffer[i++] = '0' + u % 10;
+// u /= 10;
+// } while( u > 0 );
+//
+// //Zusammensetzen und spiegeln
+// for( j = 0; j < i / 2; ++j ) {
+// tmp = Buffer[j];
+// Buffer[j] = Buffer[i-j-1];
+// Buffer[i-j-1] = tmp;
+// }
+// Buffer[i] = '\0';
+//}

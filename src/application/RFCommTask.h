@@ -32,17 +32,20 @@
 #define RFCOMMTASK_STACK_SIZE	configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
 #define RFCOMMTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
 
+#define RFCOMMBUFFERSIZE		116								/*!< size of the RF Buffer */
+
+#define RF_QUEUE_LENGTH			( 10 ) 							/*!< Length of the Message Queue */
+#define RF_ITEM_SIZE			( RFCOMMBUFFERSIZE ) 			/*!< Item size of the Elements in the Message Queue */
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
-
+extern xQueueHandle msgqRFComm;
 //Synchronisations String
 static const unsigned char SyncString[] = "M&q0:20,21,22 s3 $";
 /* ----------------------- module procedure declaration ----------------------*/
 
 extern void initRFCommTask(void);
-//extern void getrad(unsigned char *, unsigned char *, unsigned int *);
-extern unsigned short SendRFMsg(const unsigned char *);
+extern unsigned short SendRFMsg(const char *);
 /* ****************************************************************************/
 /* End Header : RFComm.h												  */
 /* ****************************************************************************/

@@ -36,23 +36,13 @@
 #include <memPoolService.h>		/* Memory pool manager service */
 #include "stm32f4xx.h"
 
-/* BSP includes */
-//#include "arm_math.h"
-
 /* Application includes */
-#include "default_task.h"
 #include "PositionTask.h"			/* Own header include */
 #include "GyroTask.h"			/* Own header include */
 #include "CANGatekeeper.h"			/* Own header include */
 #include "SyncTask.h"
 #include "UARTPeripherial.h"
 #include "ProcessTask.h"
-
-#include <stdio.h>
-
-/* lib includes */
-#include "../lib/can.h"		/* Own header include */
-#include "../lib/I2C.h"		/* Own header include */
 
 /* ------------------------- module data declaration -------------------------*/
 

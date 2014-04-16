@@ -82,8 +82,9 @@ void USART1_IRQHandler(void) {
 	char rxchar = 0;
 
 	if (USART_GetITStatus(USART1, USART_IT_RXNE ) != RESET) {
-		/*Daten in Buffer Kopieren*/
+		/*Copy data to buffer*/
 		rxchar = USART_ReceiveData(USART1);
+		/*Put the char only in the buffer if it's Ascii R or ctr was increment*/
 		if((rxchar == 'R') || (ctr != 0)){
 			RxMsg[ctr] = rxchar;
 			ctr++;
@@ -91,9 +92,10 @@ void USART1_IRQHandler(void) {
 		/*Check if termination is reached or if buffer is full*/
 		if ((RxMsg[ctr-1] == '\n') || (ctr >= (sizeof(RxMsg)-1))) {
 
+			/*Send data to process task*/
 			xQueueSendFromISR( msgqUARTProcess, &RxMsg, 0);
 			ctr = 0;
-			/*Wenn Buffer voll alles null setzten*/
+			/*Clear the buffer*/
 			memset(&RxMsg, 0, sizeof(RxMsg));
 		}
 	}

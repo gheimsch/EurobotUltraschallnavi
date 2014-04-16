@@ -229,6 +229,7 @@ static void ProcessTask(void* pvParameters) {
 			Robo1Pos.r3 = 0;
 
 		}
+		nbrConfederate = 1;
 		// send measured Distances of Robo2 to the Position Task
 		if ((Robo2Pos.r1 != 0) && (Robo2Pos.r2 != 0) && (Robo2Pos.r3 != 0) && (nbrConfederate == 1)) {
 
@@ -240,6 +241,7 @@ static void ProcessTask(void* pvParameters) {
 			Robo2Pos.r3 = 0;
 
 		}
+		nbrEnemys = 2;
 		// send measured Distances of Enemy1 to the Position Task
 		if ((Enemy1Pos.r1 != 0) && (Enemy1Pos.r2 != 0) && (Enemy1Pos.r3 != 0) && (nbrEnemys >= 1)) {
 

@@ -284,6 +284,7 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Robo2.r1, Robo2.r2, Robo2.r3, &Robo2);
 			}
+			Robo2.angle = yaw; //TODO clean
 
 		}
 		if (xActivatedMember == msgqEnemy1) {
@@ -302,6 +303,7 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Enemy1.r1, Enemy1.r2, Enemy1.r3, &Enemy1);
 			}
+			Enemy1.angle = yaw; //TODO clean
 		}
 
 		if (xActivatedMember == msgqEnemy2) {
@@ -320,6 +322,7 @@ static void PositionTask(void* pvParameters) {
 						Y_TAG20_YELLOW, Y_TAG21_YELLOW, Y_TAG22_YELLOW,
 						Enemy2.r1, Enemy2.r2, Enemy2.r3, &Enemy2);
 			}
+			Enemy2.angle = yaw; //TODO clean
 		}
 	}
 }

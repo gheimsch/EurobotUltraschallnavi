@@ -32,28 +32,26 @@
 
 #include <memPoolService.h>		/* Memory pool manager service */
 #include "stm32f4xx.h"			/* uC includes */
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
 /* application */
-#include "default_task.h"		/* Own header include */
 #include "PositionTask.h"			/* Own header include */
 #include "RFCommTask.h"				/* Own header include */
 #include "../lib/UART.h"		/* Own header include */
 #include "ProcessTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
-
+char RFMsgBuffer[RFCOMMBUFFERSIZE] = {0};
+xQueueHandle msgqRFComm;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initRFCommTask(void);
 static void RFCommTask(void* pvParameters);
-unsigned short SendRFMsg(const unsigned char *);
-//void USARTPrint(const unsigned char *, unsigned char);
-volatile unsigned char i = 0;
+unsigned short SendRFMsg(const char *);
+void USARTPrint(const char *, unsigned char);
 /* ****************************************************************************/
 /* End Header : GyroTask.c													  */
 /* ****************************************************************************/
@@ -77,6 +75,9 @@ void initRFCommTask(void) {
 	/* create the task */
 	xTaskCreate(RFCommTask, (signed char *) RFCOMMTASK_NAME,
 			RFCOMMTASK_STACK_SIZE, NULL, RFCOMMTASK_PRIORITY, NULL);
+
+	/* create Message Queue for RF messages */
+	msgqRFComm = xQueueCreate(RF_QUEUE_LENGTH, RF_ITEM_SIZE);
 }
 
 /* ****************************************************************************/
@@ -104,6 +105,9 @@ static void RFCommTask(void* pvParameters) {
 	/* for ever */
 	for (;;) {
 
+		// get the distances
+		xQueueReceive( msgqRFComm, &RFMsgBuffer, 0);
+		SendRFMsg(RFMsgBuffer);
 
 	}
 }
@@ -112,27 +116,26 @@ static void RFCommTask(void* pvParameters) {
 /* End : RFCommTask */
 /* ****************************************************************************/
 
-
-//void USARTPrint(const unsigned char *ToSend, unsigned char length) {
-//	unsigned int i;
-//
-//	/* Output a message  */
-//	for (i = 0; i < length; i++) {
-//		USART_SendData(USART1, (uint16_t) *ToSend++);
-//		/* Loop until the end of transmission */
-//		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
-//		}
-//	}
-//}
-
-/*
-unsigned short SendRFMsg(const unsigned char *str) {
+/******************************************************************************/
+/* Function: SendRFMsg */
+/******************************************************************************/
+/*! \brief Sends a RF message
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+unsigned short SendRFMsg(const char *str) {
 	unsigned char len = 0, i = 0, j = 0;
 	unsigned int check = 0;
-	unsigned char buffer[50] = { 0 };
-	unsigned char hx[4] = { 0 };
+	char buffer[RFCOMMBUFFERSIZE] = {0};
+	char hx[4] = {0};
 
-	if (strlen(str) > 116) {
+	if (strlen(str) > RFCOMMBUFFERSIZE) {
 		return 0;
 	} else {
 		len = strlen(str);
@@ -160,4 +163,34 @@ unsigned short SendRFMsg(const unsigned char *str) {
 		return 1;
 	}
 }
-*/
+/* ****************************************************************************/
+/* End : SendRFMsg */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: USARTPrint */
+/******************************************************************************/
+/*! \brief Print each char over the USART
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+void USARTPrint(const char *ToSend, unsigned char length) {
+	unsigned int i;
+
+	/* Output a message  */
+	for (i = 0; i < length; i++) {
+		USART_SendData(USART1, (uint16_t) *ToSend++);
+		/* Loop until the end of transmission */
+		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
+		}
+	}
+}
+/* ****************************************************************************/
+/* End : USARTPrint */
+/* ****************************************************************************/
