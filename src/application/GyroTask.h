@@ -32,6 +32,7 @@
 
 /* ------------------------- module data declaration -------------------------*/
 extern float yaw;		/* measured angle (used in Position Task) */
+extern xTaskHandle xGyroTaskHandle;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initGyroTask(void);
 extern void initGyr(void);

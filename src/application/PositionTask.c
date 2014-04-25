@@ -133,8 +133,6 @@ void initPositionTask(void) {
 static void PositionTask(void* pvParameters) {
 
 
-	team = yellow;
-
 	/* for ever */
 	for (;;) {
 

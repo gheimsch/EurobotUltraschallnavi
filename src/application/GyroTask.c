@@ -71,6 +71,9 @@ typedef struct RungeKuta {
 
 RungeKutta RukaRaw_yaw;		/* struct to approximate the angle */
 
+xQueueHandle msgqAngle;		/* Message Queue with angle to Position Task */
+xTaskHandle xGyroTaskHandle; /*GyroTask handel*/
+
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initGyroTask(void);
@@ -106,12 +109,15 @@ void initGyroTask(void) {
 
 	/* create the task */
 	xTaskCreate(GyroTask, (signed char *) GYROTASK_NAME, GYROTASK_STACK_SIZE,
-			NULL, GYROTASK_PRIORITY, NULL);
+			NULL, GYROTASK_PRIORITY, &xGyroTaskHandle);
 
-	/* initialise the I2C-Interface to the Gyro */
+	/*Suspend the Gyro task until the start command*/
+	vTaskSuspend( xGyroTaskHandle );
+
+	/* initialise the I2C-Interface */
 	initI2C();
 
-	/* TODO initialise when start received */
+	/* initialise the Gyro */
 	initGyr();
 
 }

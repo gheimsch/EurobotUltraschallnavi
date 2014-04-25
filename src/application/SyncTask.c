@@ -26,6 +26,7 @@
 
 #include "PositionTask.h"
 #include "ProcessTask.h"
+#include "GyroTask.h"
 #include "RFCommTask.h"
 #include "SyncTask.h"
 #include "CANGatekeeper.h"
@@ -161,6 +162,8 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 
 	/* Synchronise hexamite */
 	xQueueSend(msgqRFComm, &SyncString, 0);
+
+	vTaskResume(xGyroTaskHandle);
 
 	/* give Response */
 	//txStartConfigurationConfirm();
