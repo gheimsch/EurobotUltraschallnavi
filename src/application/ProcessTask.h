@@ -42,12 +42,16 @@
 /* ------------------------- module type declaration -------------------------*/
 /* Robo Position struct */
 typedef struct Position {
-	unsigned int x;
-	unsigned int y;
-	unsigned int r1;
-	unsigned int r2;
-	unsigned int r3;
-	unsigned int angle;
+	uint32_t x;
+	uint32_t y;
+	uint32_t r1;
+	uint32_t r2;
+	uint32_t r3;
+	uint32_t angle;
+	int32_t old_x;
+	int32_t old_y;
+	uint8_t trust_x;
+	uint8_t trust_y;
 } Position;
 /* ------------------------- module data declaration -------------------------*/
 extern xQueueHandle msgqRobo1;
