@@ -73,7 +73,7 @@ uint8_t nbrConfederate = 0;
 
 /* ----------------------- module procedure declaration ----------------------*/
 void initProcessTask(void);
-void getrad(char *RecID, char *TagID, unsigned int *rad );
+void getrad(char *RecID, char *TagID, uint32_t *rad );
 static void ProcessTask(void* pvParameters);
 /* ****************************************************************************/
 /* End Header : ProcessTask.c */
@@ -138,7 +138,7 @@ void initProcessTask(void) {
  *
  *
  *******************************************************************************/
-void getrad(char *RecID, char *TagID, unsigned int *rad ) {
+void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 
 	/* initalise used Parameters */
 	volatile unsigned char i = 0;

@@ -49,10 +49,10 @@
 /* ------------------------- module data declaration -------------------------*/
 xQueueSetMemberHandle xActivatedMember;
 
-Position Robo1 = {.x = 0, .y = 0, .r1 = 0, .r2 = 0, .r3 = 0 ,.angle = 0, .old_x = 0, .old_y = 0, .trust_x = 0, .trust_y = 0};
-Position Robo2 = {.x = 0, .y = 0, .r1 = 0, .r2 = 0, .r3 = 0, .angle = 0, .old_x = 0, .old_y = 0, .trust_x = 0, .trust_y = 0};
-Position Enemy1 = {.x = 0, .y = 0, .r1 = 0, .r2 = 0, .r3 = 0, .angle = 0, .old_x = 0, .old_y = 0, .trust_x = 0, .trust_y = 0};
-Position Enemy2 = {.x = 0, .y = 0, .r1 = 0, .r2 = 0, .r3 = 0 ,.angle = 0, .old_x = 0, .old_y = 0, .trust_x = 0, .trust_y = 0};
+Position Robo1;
+Position Robo2;
+Position Enemy1;
+Position Enemy2;
 
 uint8_t team = tbd;
 /* ----------------------- module procedure declaration ----------------------*/
@@ -310,12 +310,6 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	double_t y[2][2] = { { 0, 0 }, { 0, 0 } };
 	int32_t detd = 0;
 	double_t tmp = 0;
-	uint32_t calc_x = 0;
-	uint32_t calc_y = 0;
-
-	/* load old coordinates */
-	pos->old_x = pos->x;
-	pos->old_y = pos->y;
 
 	xn[0][0] = (int32_t) (pow(r1, 2) - pow(r2, 2)) - (pow(x1, 2) - pow(x2, 2))
 			- (pow(y1, 2) - pow(y2, 2));
@@ -347,28 +341,15 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	x[1][0] = xn[1][0] * d[0][0] + xn[1][1] * d[1][0];
 	x[1][1] = xn[1][0] * d[0][1] + xn[1][1] * d[1][1];
 	/* calculate the x-Axis */
-	calc_x = x[0][0] * x[1][1] - x[0][1] * x[1][0];
-	/* check if new position is to far from old one */
-	if((((pos->old_x - MAX_DIFFERENCE) < calc_x) || (calc_x  < (pos->old_x + MAX_DIFFERENCE))) || (pos->trust_x > 1)){
-		pos->x = calc_x;
-		pos->trust_x = 0;
-	} else{
-		pos->trust_x ++;
-	}
+	pos->x = x[0][0] * x[1][1] - x[0][1] * x[1][0];
+
 	/* multiply the Matrix yn with d */
 	y[0][0] = yn[0][0] * d[0][0] + yn[0][1] * d[1][0];
 	y[0][1] = yn[0][0] * d[0][1] + yn[0][1] * d[1][1];
 	y[1][0] = yn[1][0] * d[0][0] + yn[1][1] * d[1][0];
 	y[1][1] = yn[1][0] * d[0][1] + yn[1][1] * d[1][1];
 	/* calculate the y-Axis */
-	calc_y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
-	/* check if new position is to far from old one */
-	if((((pos->old_y - MAX_DIFFERENCE) < calc_y) || (calc_y < (pos->old_y + MAX_DIFFERENCE))) || (pos->trust_y > 1)){
-		pos->y = calc_y;
-		pos->trust_y = 0;
-	} else{
-		pos->trust_y ++;
-	}
+	pos->y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
 }
 /******************************************************************************/
 /* End: Trilateration2D */

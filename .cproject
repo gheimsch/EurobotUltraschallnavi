@@ -121,7 +121,6 @@
 							<tool id="com.atollic.truestudio.exe.debug.toolchain.secoutput.552963422" name="Other" superClass="com.atollic.truestudio.exe.debug.toolchain.secoutput"/>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="com.atollic.truestudio.exe.debug.617522363.1359381858" name="default_task.h" rcbsApplicability="disable" resourcePath="src/application/default_task.h" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry excluding="stm32f4xx_it.h|stm32f4xx_it.c|application/default_task.h|application/default_task.c|application/ISRmotorcontrol.h|application/ISRmotorcontrol.c|can_rx_tx.h|can_rx_tx.c|can_message_handler.h|can_message_handler.c|odometry.h|odometry.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
