@@ -28,6 +28,17 @@
 #define GYROTASK_STACK_SIZE		( configMINIMAL_STACK_SIZE ) 		/*!< size of the receive and transmit task */
 #define GYROTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
 
+/* register used to setup the gyro */
+#define CTRL_REG1_G   	0x20
+#define CTRL_REG2_G   	0x21
+#define CTRL_REG3_G   	0x22
+#define CTRL_REG4_G   	0x23
+#define CTRL_REG5_G   	0x24
+#define STATUS_REG1_G   0x27
+
+/* Register to read out data */
+#define OUT_X_L_G   	0xA8
+#define OUT_TEMP_G 		0x26
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/

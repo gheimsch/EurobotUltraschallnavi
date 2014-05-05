@@ -17,8 +17,6 @@
  *
  * \ingroup <group name> [<group name 2> <group name 3>]
  *
- * \todo If u have some todo's for the h-file, add it here
- *
  */
 /* ****************************************************************************/
 /*Ultraschallnavi Eurobot 2014												  */

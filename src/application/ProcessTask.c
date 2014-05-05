@@ -22,7 +22,6 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-#include "stdio.h"
 #include "string.h"
 #include "stdlib.h"
 #include "FreeRTOS.h"
@@ -34,35 +33,17 @@
 #include "RFCommTask.h"
 #include "configNavi.h"
 /* ------------------------- module data declaration -------------------------*/
-xQueueHandle msgqRobo1;		/* Message Queue to Position Task with own Robot data */
-xQueueHandle msgqRobo2;		/* Message Queue to Position Task with confederate Robot data */
-xQueueHandle msgqEnemy1;	/* Message Queue to Position Task with first Enemy data */
-xQueueHandle msgqEnemy2;	/* Message Queue to Position Task with second Enemy data */
-xQueueHandle msgqProcessRFGComm;	/* Message Queue to RFCommunication Task */
-xQueueSetHandle msgqSetProcessPosition;	/* Queue Set for all Message Queues to the Position Task */
+xQueueHandle msgqRobo1;						/* Message Queue to Position Task with own Robot data */
+xQueueHandle msgqRobo2;						/* Message Queue to Position Task with confederate Robot data */
+xQueueHandle msgqEnemy1;					/* Message Queue to Position Task with first Enemy data */
+xQueueHandle msgqEnemy2;					/* Message Queue to Position Task with second Enemy data */
+xQueueHandle msgqProcessRFGComm;			/* Message Queue to RFCommunication Task */
+xQueueSetHandle msgqSetProcessPosition;		/* Queue Set for all Message Queues to the Position Task */
 
 Position Robo1Pos;		/* Position data of own Robot */
 Position Robo2Pos;		/* Position data of confederate Robot */
 Position Enemy1Pos;		/* Position of first Enemy Robot */
 Position Enemy2Pos;		/* Position of second Enemy Robot */
-
-/* ID's of the Tags */
-static char Tag1[] = "P20";
-static char Tag2[] = "P21";
-static char Tag3[] = "P22";
-
-/* ID's of the Receivers of own Robots */
-#ifndef SET_ROBO_BIG	/* if the small Robot is activated */
-static char Receiver1[] = "R42";
-static char Receiver2[] = "R43";
-#else	/* if the big robot is activated */
-static char Receiver1[] = "R43";
-static char Receiver2[] = "R42";
-
-#endif
-/* ID's of the Receivers of Enemy Robots */
-static char Receiver3[] = "R40";
-static char Receiver4[] = "R41";
 
 /* Receive Buffer for UART Message Queue*/
 char UARTMsg[UARTBUFFERSIZE];

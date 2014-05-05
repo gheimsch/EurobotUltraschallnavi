@@ -20,6 +20,8 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
+
+/* ----------------------- module constant declaration -----------------------*/
 //#define SET_ROBO_BIG
 
 #ifndef SET_ROBO_BIG
@@ -49,12 +51,26 @@
 /* size of the Playfield */
 #define XPLAYFIELD			( 3000 )
 #define YPLAYFIELD			( 2000 )
-/* ----------------------- module constant declaration -----------------------*/
-
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
+/* ID's of the Tags */
+char Tag1[] = "P20";
+char Tag2[] = "P21";
+char Tag3[] = "P22";
 
+/* ID's of the Receivers of own Robots */
+#ifndef SET_ROBO_BIG	/* if the small Robot is activated */
+char Receiver1[] = "R42";
+char Receiver2[] = "R43";
+#else	/* if the big robot is activated */
+static char Receiver1[] = "R43";
+static char Receiver2[] = "R42";
+
+#endif
+/* ID's of the Receivers of Enemy Robots */
+char Receiver3[] = "R40";
+char Receiver4[] = "R41";
 /* ----------------------- module procedure declaration ----------------------*/
 
 /* ****************************************************************************/

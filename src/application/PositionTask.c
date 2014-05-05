@@ -28,18 +28,13 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-
-#include <memPoolService.h>		/* Memory pool manager service */
 #include "stm32f4xx.h"			/* uC includes */
-#include <stdlib.h>
-#include <string.h>
 #include <math.h>
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "task.h"
 
 /* application */
-#include "default_task.h"		/* Own header include */
 #include "PositionTask.h"			/* Own header include */
 #include "ProcessTask.h"
 #include "GyroTask.h"

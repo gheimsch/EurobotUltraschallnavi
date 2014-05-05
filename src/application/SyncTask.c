@@ -92,8 +92,6 @@ void initSyncTask(void) {
 
 static void SyncTask(void* pvParameters) {
 
-	//init values
-
 	/* for ever */
 	for (;;) {
 

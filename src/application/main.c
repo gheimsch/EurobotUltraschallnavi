@@ -37,13 +37,13 @@
 #include "stm32f4xx.h"
 
 /* Application includes */
-#include "PositionTask.h"			/* Own header include */
+#include "PositionTask.h"		/* Own header include */
 #include "GyroTask.h"			/* Own header include */
-#include "CANGatekeeper.h"			/* Own header include */
-#include "SyncTask.h"
-#include "UARTPeripherial.h"
-#include "ProcessTask.h"
-#include "RFCommTask.h"
+#include "CANGatekeeper.h"		/* Own header include */
+#include "SyncTask.h"			/* Own header include */
+#include "UARTPeripherial.h"	/* Own header include */
+#include "ProcessTask.h"		/* Own header include */
+#include "RFCommTask.h"			/* Own header include */
 
 /* ------------------------- module data declaration -------------------------*/
 

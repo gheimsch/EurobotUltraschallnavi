@@ -19,10 +19,6 @@
  *
  * \ingroup <group name> [<group name 2> <group name 3>]
  *
- * \todo If u have some todo's for the c-file, add it here
- *
- * \bug Description of the bug
- *
  */
 /* ****************************************************************************/
 /* Ultraschallnavi Eurobot 2014												  */
@@ -53,7 +49,7 @@ static void RFCommTask(void* pvParameters);
 unsigned short SendRFMsg(const char *);
 void USARTPrint(const char *, unsigned char);
 /* ****************************************************************************/
-/* End Header : GyroTask.c													  */
+/* End Header : RFCommTask.c												  */
 /* ****************************************************************************/
 
 /******************************************************************************/
@@ -100,8 +96,6 @@ void initRFCommTask(void) {
 
 static void RFCommTask(void* pvParameters) {
 
-	//init values
-
 	/* for ever */
 	for (;;) {
 
@@ -124,7 +118,7 @@ static void RFCommTask(void* pvParameters) {
 /******************************************************************************/
 /* Function: SendRFMsg */
 /******************************************************************************/
-/*! \brief Sends a RF message
+/*! \brief Sends a RF message and calculates the hex checksum
  *
  * \author heimg1, zursr1
  *
@@ -135,6 +129,7 @@ static void RFCommTask(void* pvParameters) {
  *
  *******************************************************************************/
 unsigned short SendRFMsg(const char *str) {
+
 	unsigned char len = 0, i = 0, j = 0;
 	unsigned int check = 0;
 	char buffer[RFCOMMBUFFERSIZE] = {0};
@@ -148,12 +143,12 @@ unsigned short SendRFMsg(const char *str) {
 			check += str[i];
 		}
 
-		//String zum senden generieren
+		//Create string to send
 		strcat(buffer, str);
 		strcat(buffer, "/");
-		//Hex Checksumme anfügen
+		//Append hex checksum
 		sprintf(hx, "%x", check);
-		//Kleinbuchstaben zu Grossbuchstaben wandeln
+		//Convert small letters to big
 		while (hx[j] != 0) {
 			if (hx[j] >= 97) {
 				hx[j] = hx[j] - 32;
@@ -161,7 +156,7 @@ unsigned short SendRFMsg(const char *str) {
 			j++;
 		}
 		strcat(buffer, hx);
-		//CR anhängen
+		//Append CR
 		strcat(buffer, "\r");
 		strcat(buffer, "\0");
 		USARTPrint(buffer, strlen(buffer));

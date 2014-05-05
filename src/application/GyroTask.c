@@ -36,19 +36,6 @@
 #include "PositionTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
-/* register used to setup the gyro */
-#define CTRL_REG1_G   	0x20
-#define CTRL_REG2_G   	0x21
-#define CTRL_REG3_G   	0x22
-#define CTRL_REG4_G   	0x23
-#define CTRL_REG5_G   	0x24
-#define STATUS_REG1_G   0x27
-
-/* Register to read out data */
-#define OUT_X_L_G   	0xA8
-#define OUT_TEMP_G 		0x26
-
-
 /* data to config the gyro */
 static uint8_t CTRL_REG1_G_DATA = 0x0F;
 static uint8_t CTRL_REG2_G_DATA = 0x00;
@@ -70,8 +57,6 @@ typedef struct RungeKuta {
 } RungeKutta;
 
 RungeKutta RukaRaw_yaw;		/* struct to approximate the angle */
-
-xQueueHandle msgqAngle;		/* Message Queue with angle to Position Task */
 xTaskHandle xGyroTaskHandle; /*GyroTask handel*/
 
 /* ----------------------- module procedure declaration ----------------------*/

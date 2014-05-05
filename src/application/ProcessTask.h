@@ -30,10 +30,10 @@
 #define QUEUE_LENGTH_4		( 5 )		/*!< Length of the Queue Receiver 4 */
 #define PROCESSRFCOMM_QUEUE_LENGTH		( 5 )		/*!< Length of the Queue Process to RFComm */
 
-#define ITEM_SIZE_QUEUE_1	( sizeof(Position) )	/*!< Item size of the Elements in the Message Queue */
-#define ITEM_SIZE_QUEUE_2	( sizeof(Position) )	/*!< Item size of the Elements in the Message Queue */
-#define ITEM_SIZE_QUEUE_3	( sizeof(Position) )	/*!< Item size of the Elements in the Message Queue */
-#define ITEM_SIZE_QUEUE_4	( sizeof(Position) )	/*!< Item size of the Elements in the Message Queue */
+#define ITEM_SIZE_QUEUE_1	( sizeof(Position) )		/*!< Item size of the Elements in the Message Queue */
+#define ITEM_SIZE_QUEUE_2	( sizeof(Position) )		/*!< Item size of the Elements in the Message Queue */
+#define ITEM_SIZE_QUEUE_3	( sizeof(Position) )		/*!< Item size of the Elements in the Message Queue */
+#define ITEM_SIZE_QUEUE_4	( sizeof(Position) )		/*!< Item size of the Elements in the Message Queue */
 #define PROCESSRFCOMM_ITEM_SIZE	( sizeof(Position) )	/*!< Item size of the Elements in the Message Queue */
 
 #define COMBINED_LENGTH		( QUEUE_LENGTH_1 + QUEUE_LENGTH_2 + QUEUE_LENGTH_3 + QUEUE_LENGTH_4 )	/*!< Length of the combined Queues in the QueueSet */
