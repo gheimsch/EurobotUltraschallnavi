@@ -34,6 +34,7 @@
 
 #include "GyroTask.h"
 #include "PositionTask.h"
+#include "configNavi.h"
 
 /* ------------------------- module data declaration -------------------------*/
 /* data to config the gyro */
@@ -139,6 +140,9 @@ static void GyroTask(void* pvParameters) {
 
 	calculateGyroOffsets();
 	calculateDrift();
+
+	/* initialise startangle */
+	yaw = STARTANGLE;
 
 	/* for ever */
 	for (;;) {

@@ -48,6 +48,9 @@
 #define X_TAG22_YELLOW		( 3060 )
 #define Y_TAG22_YELLOW		( 2060 )
 
+/* Startangle of the Robot */
+#define STARTANGLE			( 270 )
+
 /* size of the Playfield */
 #define XPLAYFIELD			( 3000 )
 #define YPLAYFIELD			( 2000 )
