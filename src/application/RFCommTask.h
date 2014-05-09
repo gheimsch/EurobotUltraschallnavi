@@ -28,7 +28,7 @@
 
 #define RFCOMMTASK_NAME			"RFComm Task"					/*!< Detailed description after the member */
 #define RFCOMMTASK_STACK_SIZE	configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
-#define RFCOMMTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
+#define RFCOMMTASK_PRIORITY		(configMAX_PRIORITIES - 3UL) 	/*!< priority of the receive and transmit task */
 
 #define RFCOMMBUFFERSIZE		35								/*!< size of the RF Buffer */
 

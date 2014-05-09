@@ -927,6 +927,7 @@ static void vCANTx(void* pvParameters )
  */
 static void catchCANRx(CanRxMsg can_rx_data)
 {
+	//static signed portBASE_TYPE bla = pdFALSE;
     xQueueSendToBackFromISR(qCANRx,&can_rx_data,0);
 }
 

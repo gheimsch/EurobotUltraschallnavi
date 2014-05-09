@@ -50,6 +50,7 @@ Position Enemy1;
 Position Enemy2;
 
 uint8_t team = tbd;
+
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initPositionTask(void);
@@ -205,6 +206,7 @@ static void PositionTask(void* pvParameters) {
 			/* get the distances */
 			xQueueReceive( xActivatedMember, &Enemy1, 0);
 
+			taskENTER_CRITICAL();
 			/* calculate the position for team red */
 			if (team == red) {
 				Trilateration2D(X_TAG20_RED, X_TAG21_RED, X_TAG22_RED,
@@ -228,6 +230,7 @@ static void PositionTask(void* pvParameters) {
 				Enemy1.y = Enemy1.y
 						+ compensateYaxisEnemyyellow(Enemy1.x, Enemy1.y);
 			}
+			taskEXIT_CRITICAL();
 
 		}
 
@@ -369,6 +372,11 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 
 void posRobo1Request(uint16_t id, CAN_data_t* data) {
 	txNaviPositionResponse(Robo1.x, Robo1.y, Robo1.angle, 0);
+//	Robo1.r1 = 0;
+//	Robo1.r2 = 0;
+//	Robo1.r3 = 0;
+//	Robo1.x = 0;
+//	Robo1.y = 0;
 }
 
 /* ****************************************************************************/
@@ -394,6 +402,11 @@ void posRobo1Request(uint16_t id, CAN_data_t* data) {
 
 void posRobo2Request(uint16_t id, CAN_data_t* data) {
 	txConfederatePositionResponse(Robo2.x, Robo2.y, 0, 0);
+//	Robo2.r1 = 0;
+//	Robo2.r2 = 0;
+//	Robo2.r3 = 0;
+//	Robo2.x = 0;
+//	Robo2.y = 0;
 }
 
 /* ****************************************************************************/
@@ -419,6 +432,11 @@ void posRobo2Request(uint16_t id, CAN_data_t* data) {
 
 void posEnemy1Request(uint16_t id, CAN_data_t* data) {
 	txEnemey1PositionResponse(Enemy1.x, Enemy1.y, 0, 0);
+//	Enemy1.r1 = 0;
+//	Enemy1.r2 = 0;
+//	Enemy1.r3 = 0;
+//	Enemy1.x = 0;
+//	Enemy1.y = 0;
 }
 
 /* ****************************************************************************/
@@ -444,6 +462,11 @@ void posEnemy1Request(uint16_t id, CAN_data_t* data) {
 
 void posEnemy2Request(uint16_t id, CAN_data_t* data) {
 	txEnemey2PositionResponse(Enemy2.x, Enemy2.y, 0, 0);
+//	Enemy2.r1 = 0;
+//	Enemy2.r2 = 0;
+//	Enemy2.r3 = 0;
+//	Enemy2.x = 0;
+//	Enemy2.y = 0;
 }
 
 /* ****************************************************************************/

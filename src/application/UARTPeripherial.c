@@ -81,6 +81,7 @@ void USART1_IRQHandler(void) {
 
 	char rxchar = 0;
 
+
 	if (USART_GetITStatus(USART1, USART_IT_RXNE ) != RESET) {
 		/*Copy data to buffer*/
 		rxchar = USART_ReceiveData(USART1);

@@ -26,7 +26,7 @@
 /* ----------------------- module constant declaration -----------------------*/
 #define GYROTASK_NAME			"Gyro Task"					/*!< Detailed description after the member */
 #define GYROTASK_STACK_SIZE		( configMINIMAL_STACK_SIZE ) 		/*!< size of the receive and transmit task */
-#define GYROTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
+#define GYROTASK_PRIORITY		(configMAX_PRIORITIES - 2UL) 	/*!< priority of the receive and transmit task */
 
 /* register used to setup the gyro */
 #define CTRL_REG1_G   	0x20

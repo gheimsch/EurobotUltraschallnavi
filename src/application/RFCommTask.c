@@ -99,13 +99,15 @@ static void RFCommTask(void* pvParameters) {
 	/* for ever */
 	for (;;) {
 
-		// get the distances
+		// get the RF message
 		xQueueReceive( msgqRFComm, &RFMsgBuffer, 0);
 
 		if(strlen(RFMsgBuffer) != 0){
 			SendRFMsg(RFMsgBuffer);
 			memset(&RFMsgBuffer, 0, sizeof(RFMsgBuffer));
 		}
+
+		vTaskDelay(100/portTICK_RATE_MS);
 
 
 	}

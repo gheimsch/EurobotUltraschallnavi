@@ -45,6 +45,24 @@ Position Robo2Pos;		/* Position data of confederate Robot */
 Position Enemy1Pos;		/* Position of first Enemy Robot */
 Position Enemy2Pos;		/* Position of second Enemy Robot */
 
+/* ID's of the Tags */
+char Tag1[] = "P20";
+char Tag2[] = "P21";
+char Tag3[] = "P22";
+
+/* ID's of the Receivers of own Robots */
+#ifndef SET_ROBO_BIG	/* if the small Robot is activated */
+char Receiver1[] = "R42";
+char Receiver2[] = "R43";
+#else	/* if the big robot is activated */
+static char Receiver1[] = "R43";
+static char Receiver2[] = "R42";
+
+#endif
+/* ID's of the Receivers of Enemy Robots */
+char Receiver3[] = "R40";
+char Receiver4[] = "R41";
+
 /* Receive Buffer for UART Message Queue*/
 char UARTMsg[UARTBUFFERSIZE];
 
@@ -135,6 +153,7 @@ void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 	strcat(Filterstr, " ");
 	strcat(Filterstr, "A");
 
+	taskENTER_CRITICAL();
 	/* check if Filterstring is in the UARTMsg */
 	if (strstr(UARTMsg, Filterstr) != NULL ) {
 		/* read out the Position of the Distance into the String */
@@ -152,6 +171,7 @@ void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 			i++;
 		}
 	}
+	taskEXIT_CRITICAL();
 	/* set back the Filterstring */
 	memset(&Filterstr, 0, sizeof(Filterstr));
 	/* converte the read out distance into a integer  */

@@ -95,7 +95,12 @@ static void SyncTask(void* pvParameters) {
 	/* for ever */
 	for (;;) {
 
-		vTaskDelay(100 / portTICK_RATE_MS);
+		/* Synchronise hexamite */
+//		xQueueSend(msgqRFComm, &DesyncString, 0);
+//		xQueueSend(msgqRFComm, &SyncString, 0);
+
+
+		vTaskDelay(2000 / portTICK_RATE_MS);
 	}
 }
 
@@ -161,9 +166,13 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 	/* Synchronise hexamite */
 	xQueueSend(msgqRFComm, &SyncString, 0);
 
+	/*Delay for 500ms to avoid shaking from button*/
+	vTaskDelay(500 / portTICK_RATE_MS);
+
+	/*Resume GyroTask and run compensation*/
 	vTaskResume(xGyroTaskHandle);
 
-	/* give Response */
+	/* give Response(not used)*/
 	//txStartConfigurationConfirm();
 }
 
