@@ -29,12 +29,12 @@
 /* ----------------------- module constant declaration -----------------------*/
 #define SYNCTASK_NAME			"Synchronisation Task"			/*!< Detailed description after the member */
 #define SYNCTASK_STACK_SIZE		configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
-#define SYNCTASK_PRIORITY		(configMAX_PRIORITIES - 3UL) 	/*!< priority of the receive and transmit task */
+#define SYNCTASK_PRIORITY		(configMAX_PRIORITIES - 2UL) 	/*!< priority of the receive and transmit task */
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
 //Synchronization String
-static const char SyncString[] = "M&q0:20,21,22 s3 $";
+static const char SyncString[] = "M1&q0:20,21,22 s3 $";
 static const char DesyncString[] = "M& %";
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initSyncTask(void);

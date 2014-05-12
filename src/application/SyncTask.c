@@ -30,6 +30,7 @@
 #include "RFCommTask.h"
 #include "SyncTask.h"
 #include "CANGatekeeper.h"
+#include "configNavi.h"
 /* ------------------------- module data declaration -------------------------*/
 
 /* ----------------------- module procedure declaration ----------------------*/
@@ -95,12 +96,16 @@ static void SyncTask(void* pvParameters) {
 	/* for ever */
 	for (;;) {
 
+	#ifdef SET_ROBO_BIG	/* if the small Robot is activated */
+
+	#else	/* if the big robot is activated */
 		/* Synchronise hexamite */
 //		xQueueSend(msgqRFComm, &DesyncString, 0);
 //		xQueueSend(msgqRFComm, &SyncString, 0);
 
+	#endif
 
-		vTaskDelay(2000 / portTICK_RATE_MS);
+		vTaskDelay(1000 / portTICK_RATE_MS);
 	}
 }
 
@@ -163,8 +168,15 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 	/* get the Number of confederate Robots */
 	nbrConfederate = data->gip_confederate;
 
+#ifdef SET_ROBO_BIG	/* if the small Robot is activated */
+
+#else	/* if the big robot is activated */
 	/* Synchronise hexamite */
+	xQueueSend(msgqRFComm, &DesyncString, 0);
 	xQueueSend(msgqRFComm, &SyncString, 0);
+
+#endif
+
 
 	/*Delay for 500ms to avoid shaking from button*/
 	vTaskDelay(500 / portTICK_RATE_MS);

@@ -102,10 +102,12 @@ static void RFCommTask(void* pvParameters) {
 		// get the RF message
 		xQueueReceive( msgqRFComm, &RFMsgBuffer, 0);
 
+		taskENTER_CRITICAL();
 		if(strlen(RFMsgBuffer) != 0){
 			SendRFMsg(RFMsgBuffer);
 			memset(&RFMsgBuffer, 0, sizeof(RFMsgBuffer));
 		}
+		taskEXIT_CRITICAL();
 
 		vTaskDelay(100/portTICK_RATE_MS);
 
@@ -136,6 +138,7 @@ unsigned short SendRFMsg(const char *str) {
 	unsigned int check = 0;
 	char buffer[RFCOMMBUFFERSIZE] = {0};
 	char hx[4] = {0};
+
 
 	if (strlen(str) > RFCOMMBUFFERSIZE) {
 		return 0;
@@ -185,6 +188,7 @@ unsigned short SendRFMsg(const char *str) {
 void USARTPrint(const char *ToSend, unsigned char length) {
 	unsigned int i;
 
+	taskENTER_CRITICAL();
 	/* Output a message  */
 	for (i = 0; i < length; i++) {
 		USART_SendData(USART1, (uint16_t) *ToSend++);
@@ -192,6 +196,7 @@ void USARTPrint(const char *ToSend, unsigned char length) {
 		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
 		}
 	}
+	taskEXIT_CRITICAL();
 }
 /* ****************************************************************************/
 /* End : USARTPrint */

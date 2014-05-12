@@ -146,6 +146,7 @@ void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 	unsigned char Msgpos;
 	char Filterstr[9];		/* Messagefilter */
 
+	taskENTER_CRITICAL();
 	/* create the Filterstring */
 	strcpy(Filterstr, RecID);
 	strcat(Filterstr, " ");
@@ -153,7 +154,6 @@ void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 	strcat(Filterstr, " ");
 	strcat(Filterstr, "A");
 
-	taskENTER_CRITICAL();
 	/* check if Filterstring is in the UARTMsg */
 	if (strstr(UARTMsg, Filterstr) != NULL ) {
 		/* read out the Position of the Distance into the String */
@@ -171,7 +171,7 @@ void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 			i++;
 		}
 	}
-	taskEXIT_CRITICAL();
+
 	/* set back the Filterstring */
 	memset(&Filterstr, 0, sizeof(Filterstr));
 	/* converte the read out distance into a integer  */
@@ -179,6 +179,7 @@ void getrad(char *RecID, char *TagID, uint32_t *rad ) {
 	if ((valueret > 10) && (valueret < 3700)) {
 		*rad = valueret;
 	}
+	taskEXIT_CRITICAL();
 
 }
 
