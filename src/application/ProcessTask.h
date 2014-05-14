@@ -48,6 +48,9 @@ typedef struct Position {
 	uint32_t r2;
 	uint32_t r3;
 	uint32_t angle;
+	int32_t old_x;
+	int32_t old_y;
+	uint8_t trust;
 } Position;
 /* ------------------------- module data declaration -------------------------*/
 extern xQueueHandle msgqRobo1;

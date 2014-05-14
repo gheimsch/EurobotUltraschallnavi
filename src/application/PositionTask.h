@@ -30,7 +30,7 @@
 #define POSITIONCAN_QUEUE_LENGTH	( 3 ) 				/*!< Length of the Message Queue */
 #define POSITIONCAN_ITEM_SIZE		( sizeof(long) ) 	/*!< Item size of the Elements in the Message Queue */
 
-#define MAX_DIFFERENCE				( 1000 )			/* max difference of the old to the new coordinate */
+#define TRUSTRADIUS					( 400 )			/* max difference of the old to the new coordinate */
 /* ------------------------- module type declaration -------------------------*/
 enum color {
 	yellow = 0, red = 1, tbd  = 2

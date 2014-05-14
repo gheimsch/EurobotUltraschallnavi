@@ -50,6 +50,9 @@ Position Enemy1;
 Position Enemy2;
 
 uint8_t team = tbd;
+uint8_t trusttemp = 0;
+uint32_t oldxtemp = 0;
+uint32_t oldytemp = 0;
 
 /* ----------------------- module procedure declaration ----------------------*/
 
@@ -139,8 +142,18 @@ static void PositionTask(void* pvParameters) {
 		/* data of own Robot arrived */
 		if (xActivatedMember == msgqRobo1) {
 
+			/*save old values*/
+			trusttemp = Robo1.trust;
+			oldxtemp = Robo1.x;
+			oldytemp = Robo1.y;
+
 			/* get the distances */
 			xQueueReceive( xActivatedMember, &Robo1, 0);
+
+			/*restore old values*/
+			Robo1.trust = trusttemp;
+			Robo1.x = oldxtemp;
+			Robo1.y = oldytemp;
 
 			/* calculate the position for team red */
 			if (team == red) {
@@ -172,8 +185,18 @@ static void PositionTask(void* pvParameters) {
 		/* data of other confederate Robot arrived */
 		if (xActivatedMember == msgqRobo2) {
 
+			/*save old values*/
+			trusttemp = Robo2.trust;
+			oldxtemp = Robo2.x;
+			oldytemp = Robo2.y;
+
 			/* get the distances */
 			xQueueReceive( xActivatedMember, &Robo2, 0);
+
+			/*restore old values*/
+			Robo2.trust = trusttemp;
+			Robo2.x = oldxtemp;
+			Robo2.y = oldytemp;
 
 			/* calculate the position for team red */
 			if (team == red) {
@@ -203,8 +226,18 @@ static void PositionTask(void* pvParameters) {
 		/* data of the first Enemy arrived */
 		if (xActivatedMember == msgqEnemy1) {
 
+			/*save old values*/
+			trusttemp = Enemy1.trust;
+			oldxtemp = Enemy1.x;
+			oldytemp = Enemy1.y;
+
 			/* get the distances */
 			xQueueReceive( xActivatedMember, &Enemy1, 0);
+
+			/*restore old values*/
+			Enemy1.trust = trusttemp;
+			Enemy1.x = oldxtemp;
+			Enemy1.y = oldytemp;
 
 			taskENTER_CRITICAL();
 			/* calculate the position for team red */
@@ -237,8 +270,18 @@ static void PositionTask(void* pvParameters) {
 		/* data of the second Enemy arrived */
 		if (xActivatedMember == msgqEnemy2) {
 
+			/*save old values*/
+			trusttemp = Enemy2.trust;
+			oldxtemp = Enemy2.x;
+			oldytemp = Enemy2.y;
+
 			/* get the distances */
 			xQueueReceive( xActivatedMember, &Enemy2, 0);
+
+			/*restore old values*/
+			Enemy2.trust = trusttemp;
+			Enemy2.x = oldxtemp;
+			Enemy2.y = oldytemp;
 
 			/* calculate the position for team red */
 			if (team == red) {
@@ -308,6 +351,8 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	double_t y[2][2] = { { 0, 0 }, { 0, 0 } };
 	int32_t detd = 0;
 	double_t tmp = 0;
+	uint32_t calc_x = 0;
+	uint32_t calc_y = 0;
 
 	xn[0][0] = (int32_t) (pow(r1, 2) - pow(r2, 2)) - (pow(x1, 2) - pow(x2, 2))
 			- (pow(y1, 2) - pow(y2, 2));
@@ -339,7 +384,7 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	x[1][0] = xn[1][0] * d[0][0] + xn[1][1] * d[1][0];
 	x[1][1] = xn[1][0] * d[0][1] + xn[1][1] * d[1][1];
 	/* calculate the x-Axis */
-	pos->x = x[0][0] * x[1][1] - x[0][1] * x[1][0];
+	calc_x = x[0][0] * x[1][1] - x[0][1] * x[1][0];
 
 	/* multiply the Matrix yn with d */
 	y[0][0] = yn[0][0] * d[0][0] + yn[0][1] * d[1][0];
@@ -347,7 +392,17 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	y[1][0] = yn[1][0] * d[0][0] + yn[1][1] * d[1][0];
 	y[1][1] = yn[1][0] * d[0][1] + yn[1][1] * d[1][1];
 	/* calculate the y-Axis */
-	pos->y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
+	calc_y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
+	/* check if new position is to far from old one */
+	if (((pos->x - calc_x) * (pos->x - calc_x)
+			+ (pos->y - calc_y) * (pos->y - calc_y)
+			< (TRUSTRADIUS * TRUSTRADIUS)) || (pos->trust >= 1)){
+	pos->x = calc_x;
+	pos->y = calc_y;
+	pos->trust = 0;
+	} else {
+	pos->trust++;
+	}
 }
 /******************************************************************************/
 /* End: Trilateration2D */
