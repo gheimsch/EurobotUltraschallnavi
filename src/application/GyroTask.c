@@ -28,6 +28,7 @@
 #include "../lib/UART.h"
 #include "math.h"
 #include "FreeRTOS.h"
+#include "semphr.h"
 #include "task.h"
 #include "queue.h"
 #include "string.h"
@@ -59,6 +60,7 @@ typedef struct RungeKuta {
 
 RungeKutta RukaRaw_yaw;		/* struct to approximate the angle */
 xTaskHandle xGyroTaskHandle; /*GyroTask handel*/
+xSemaphoreHandle xSyncSemaphore;//TODO
 
 /* ----------------------- module procedure declaration ----------------------*/
 
@@ -96,6 +98,9 @@ void initGyroTask(void) {
 	/* create the task */
 	xTaskCreate(GyroTask, (signed char *) GYROTASK_NAME, GYROTASK_STACK_SIZE,
 			NULL, GYROTASK_PRIORITY, &xGyroTaskHandle);
+
+	/*create semaphore for sync handling*/
+	vSemaphoreCreateBinary(xSyncSemaphore);//TODO
 
 	/*Suspend the Gyro task until the start command*/
 	vTaskSuspend( xGyroTaskHandle );
@@ -136,15 +141,28 @@ static void GyroTask(void* pvParameters) {
 	/* angle rate */
 	int16_t outGyr = 0;
 
-	t_start = xTaskGetTickCount();
-
-	calculateGyroOffsets();
-	calculateDrift();
-
-	yaw = STARTANGLE;
-
 	/* for ever */
 	for (;;) {
+
+		//TODO
+		if(xSemaphoreTake( xSyncSemaphore, 100 / portTICK_RATE_MS ) == pdTRUE ){
+
+			/*set working variables back*/
+			t_start = 0;
+			t_end = 0;
+			t_delta = 0;
+			outGyr = 0;
+
+			t_start = xTaskGetTickCount();
+
+			/*calculate drift and offset*/
+			calculateGyroOffsets();
+			calculateDrift();
+
+			/*set angle to start-angle*/
+			yaw = STARTANGLE;
+
+		}
 
 		vTaskDelay(10 / portTICK_RATE_MS);
 

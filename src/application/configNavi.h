@@ -22,7 +22,7 @@
 /* --------------------------------- imports ---------------------------------*/
 
 /* ----------------------- module constant declaration -----------------------*/
-//#define SET_ROBO_BIG
+#define SET_ROBO_BIG
 
 #ifndef SET_ROBO_BIG
 /* small robot */

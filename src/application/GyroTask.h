@@ -22,7 +22,7 @@
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-
+#include "semphr.h"
 /* ----------------------- module constant declaration -----------------------*/
 #define GYROTASK_NAME			"Gyro Task"					/*!< Detailed description after the member */
 #define GYROTASK_STACK_SIZE		( configMINIMAL_STACK_SIZE ) 		/*!< size of the receive and transmit task */
@@ -43,6 +43,7 @@
 
 /* ------------------------- module data declaration -------------------------*/
 extern float yaw;		/* measured angle (used in Position Task) */
+extern xSemaphoreHandle xSyncSemaphore;//TODO
 extern xTaskHandle xGyroTaskHandle;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initGyroTask(void);

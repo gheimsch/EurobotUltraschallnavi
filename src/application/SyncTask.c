@@ -24,9 +24,9 @@
 #include "task.h"
 #include "queue.h"
 
+#include "GyroTask.h"
 #include "PositionTask.h"
 #include "ProcessTask.h"
-#include "GyroTask.h"
 #include "RFCommTask.h"
 #include "SyncTask.h"
 #include "CANGatekeeper.h"
@@ -95,15 +95,6 @@ static void SyncTask(void* pvParameters) {
 
 	/* for ever */
 	for (;;) {
-
-	#ifdef SET_ROBO_BIG	/* if the small Robot is activated */
-
-	#else	/* if the big robot is activated */
-		/* Synchronise hexamite */
-//		xQueueSend(msgqRFComm, &DesyncString, 0);
-//		xQueueSend(msgqRFComm, &SyncString, 0);
-
-	#endif
 
 		vTaskDelay(1000 / portTICK_RATE_MS);
 	}
@@ -182,6 +173,7 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 	vTaskDelay(500 / portTICK_RATE_MS);
 
 	/*Resume GyroTask and run compensation*/
+	xSemaphoreGive(xSyncSemaphore);//TODO
 	vTaskResume(xGyroTaskHandle);
 
 	/* give Response(not used)*/
