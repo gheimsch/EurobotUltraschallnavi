@@ -393,10 +393,10 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 	y[1][1] = yn[1][0] * d[0][1] + yn[1][1] * d[1][1];
 	/* calculate the y-Axis */
 	calc_y = y[0][0] * y[1][1] - y[0][1] * y[1][0];
+
 	/* check if new position is to far from old one */
-	if (((pos->x - calc_x) * (pos->x - calc_x)
-			+ (pos->y - calc_y) * (pos->y - calc_y)
-			< (TRUSTRADIUS * TRUSTRADIUS)) || (pos->trust >= 1)){
+	if (((pos->x - calc_x) * (pos->x - calc_x) + (pos->y - calc_y) * (pos->y - calc_y)
+		< (TRUSTRADIUS * TRUSTRADIUS)) || (pos->trust >= 1)){
 	pos->x = calc_x;
 	pos->y = calc_y;
 	pos->trust = 0;
@@ -427,11 +427,7 @@ void Trilateration2D(int32_t x1, int32_t x2, int32_t x3, int32_t y1, int32_t y2,
 
 void posRobo1Request(uint16_t id, CAN_data_t* data) {
 	txNaviPositionResponse(Robo1.x, Robo1.y, Robo1.angle, 0);
-//	Robo1.r1 = 0;
-//	Robo1.r2 = 0;
-//	Robo1.r3 = 0;
-//	Robo1.x = 0;
-//	Robo1.y = 0;
+
 }
 
 /* ****************************************************************************/
@@ -457,11 +453,7 @@ void posRobo1Request(uint16_t id, CAN_data_t* data) {
 
 void posRobo2Request(uint16_t id, CAN_data_t* data) {
 	txConfederatePositionResponse(Robo2.x, Robo2.y, 0, 0);
-//	Robo2.r1 = 0;
-//	Robo2.r2 = 0;
-//	Robo2.r3 = 0;
-//	Robo2.x = 0;
-//	Robo2.y = 0;
+
 }
 
 /* ****************************************************************************/
@@ -487,11 +479,7 @@ void posRobo2Request(uint16_t id, CAN_data_t* data) {
 
 void posEnemy1Request(uint16_t id, CAN_data_t* data) {
 	txEnemey1PositionResponse(Enemy1.x, Enemy1.y, 0, 0);
-//	Enemy1.r1 = 0;
-//	Enemy1.r2 = 0;
-//	Enemy1.r3 = 0;
-//	Enemy1.x = 0;
-//	Enemy1.y = 0;
+
 }
 
 /* ****************************************************************************/
@@ -517,11 +505,7 @@ void posEnemy1Request(uint16_t id, CAN_data_t* data) {
 
 void posEnemy2Request(uint16_t id, CAN_data_t* data) {
 	txEnemey2PositionResponse(Enemy2.x, Enemy2.y, 0, 0);
-//	Enemy2.r1 = 0;
-//	Enemy2.r2 = 0;
-//	Enemy2.r3 = 0;
-//	Enemy2.x = 0;
-//	Enemy2.y = 0;
+
 }
 
 /* ****************************************************************************/

@@ -60,7 +60,7 @@ typedef struct RungeKuta {
 
 RungeKutta RukaRaw_yaw;		/* struct to approximate the angle */
 xTaskHandle xGyroTaskHandle; /*GyroTask handel*/
-xSemaphoreHandle xSyncSemaphore;//TODO
+xSemaphoreHandle xSyncSemaphore; /*reinit handle*/
 
 /* ----------------------- module procedure declaration ----------------------*/
 
@@ -100,7 +100,7 @@ void initGyroTask(void) {
 			NULL, GYROTASK_PRIORITY, &xGyroTaskHandle);
 
 	/*create semaphore for sync handling*/
-	vSemaphoreCreateBinary(xSyncSemaphore);//TODO
+	vSemaphoreCreateBinary(xSyncSemaphore);
 
 	/*Suspend the Gyro task until the start command*/
 	vTaskSuspend( xGyroTaskHandle );
@@ -144,7 +144,6 @@ static void GyroTask(void* pvParameters) {
 	/* for ever */
 	for (;;) {
 
-		//TODO
 		if(xSemaphoreTake( xSyncSemaphore, 100 / portTICK_RATE_MS ) == pdTRUE ){
 
 			/*set working variables back*/

@@ -43,7 +43,7 @@
 
 /* ------------------------- module data declaration -------------------------*/
 extern float yaw;		/* measured angle (used in Position Task) */
-extern xSemaphoreHandle xSyncSemaphore;//TODO
+extern xSemaphoreHandle xSyncSemaphore;	/*reinit handle*/
 extern xTaskHandle xGyroTaskHandle;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initGyroTask(void);

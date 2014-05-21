@@ -173,7 +173,7 @@ void SetConfiguration(uint16_t id, CAN_data_t* data) {
 	vTaskDelay(500 / portTICK_RATE_MS);
 
 	/*Resume GyroTask and run compensation*/
-	xSemaphoreGive(xSyncSemaphore);//TODO
+	xSemaphoreGive(xSyncSemaphore);
 	vTaskResume(xGyroTaskHandle);
 
 	/* give Response(not used)*/

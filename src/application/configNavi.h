@@ -48,7 +48,11 @@
 #define X_TAG22_YELLOW		( 3060 )
 #define Y_TAG22_YELLOW		( 2060 )
 
+/*Starting angle*/
 #define STARTANGLE			( 270 )
+
+/* max radius in which the new point could be */
+#define TRUSTRADIUS			( 400 )
 
 /* size of the Playfield */
 #define XPLAYFIELD			( 3000 )
