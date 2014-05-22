@@ -19,10 +19,6 @@
  *
  * \ingroup <group name> [<group name 2> <group name 3>]
  *
- * \todo If u have some todo's for the c-file, add it here
- *
- * \bug Description of the bug
- *
  */
 /* ****************************************************************************/
 /* Ultraschallnavi Eurobot 2014												  */
@@ -32,36 +28,28 @@
 
 #include <memPoolService.h>		/* Memory pool manager service */
 #include "stm32f4xx.h"			/* uC includes */
-#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <math.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
 /* application */
-#include "default_task.h"		/* Own header include */
 #include "PositionTask.h"			/* Own header include */
 #include "RFCommTask.h"				/* Own header include */
 #include "../lib/UART.h"		/* Own header include */
+#include "ProcessTask.h"
 
 /* ------------------------- module data declaration -------------------------*/
-//Receive Buffer
-volatile char RxMsg[BUFFERSIZE];
-//Messagefilter
-unsigned char Filterstr[9];
-unsigned char stringout[15];
-volatile unsigned char i = 0;
-
+char RFMsgBuffer[RFCOMMBUFFERSIZE] = {0};
+xQueueHandle msgqRFComm;
 /* ----------------------- module procedure declaration ----------------------*/
 
 void initRFCommTask(void);
-void getrad(unsigned char *, unsigned char *, unsigned int *);
-unsigned short SendRFMsg(const unsigned char *);
-void USARTPrint(const unsigned char *, unsigned char);
-void Delay_ms(unsigned int);
-
+static void RFCommTask(void* pvParameters);
+unsigned short SendRFMsg(const char *);
+void USARTPrint(const char *, unsigned char);
 /* ****************************************************************************/
-/* End Header : GyroTask.c													  */
+/* End Header : RFCommTask.c												  */
 /* ****************************************************************************/
 
 /******************************************************************************/
@@ -83,96 +71,76 @@ void initRFCommTask(void) {
 	/* create the task */
 	xTaskCreate(RFCommTask, (signed char *) RFCOMMTASK_NAME,
 			RFCOMMTASK_STACK_SIZE, NULL, RFCOMMTASK_PRIORITY, NULL);
+
+	/* create Message Queue for RF messages */
+	msgqRFComm = xQueueCreate(RF_QUEUE_LENGTH, RF_ITEM_SIZE);
 }
 
 /* ****************************************************************************/
 /* End : initRFCommTask */
 /* ****************************************************************************/
 
-//USART RX IRQ Handler
-void USART1_IRQHandler(void) {
-	__disable_irq(); // kein disable nötig Vorsicht, allfällig critical section beim Auslesen (grosi)
+/******************************************************************************/
+/* Function: RFCommTask */
+/******************************************************************************/
+/*! \brief RFComm Task
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
 
-	if (USART_GetITStatus(USART1, USART_IT_RXNE ) != RESET) {
-		//Daten in Buffer Kopieren
-		RxMsg[i] = USART_ReceiveData(USART1 );
-		i++;
-		if (i >= (sizeof(RxMsg) - 1)) {
-			i = 0;
-			//Wenn Buffer voll alles null setzten
-			memset(&RxMsg, 0, sizeof(RxMsg));
+static void RFCommTask(void* pvParameters) {
+
+	/* for ever */
+	for (;;) {
+
+		// get the RF message
+		xQueueReceive( msgqRFComm, &RFMsgBuffer, 0);
+
+		taskENTER_CRITICAL();
+		if(strlen(RFMsgBuffer) != 0){
+			SendRFMsg(RFMsgBuffer);
+			memset(&RFMsgBuffer, 0, sizeof(RFMsgBuffer));
 		}
-	}
-	__enable_irq();
-}
+		taskEXIT_CRITICAL();
 
-void Delay_ms(unsigned int ms) {
+		vTaskDelay(100/portTICK_RATE_MS);
 
-	int tms;
-	tms = 5000 * ms;
-	while (tms--)
-		;
-}
 
-//Entfernung von Tag zu Receiver auslesen
-void getrad(unsigned char *RecID, unsigned char *TagID, unsigned int * rad) {
-
-	volatile unsigned char i = 0;
-	unsigned char value[4] = { 0, 0, 0, 0 };
-	unsigned int valueret = 0;
-	unsigned char Msgpos;
-	//Filterstring zusammensetzten
-	strcpy(Filterstr, RecID);
-	strcat(Filterstr, " ");
-	strcat(Filterstr, TagID);
-	strcat(Filterstr, " ");
-	strcat(Filterstr, "A");
-
-	//Prüfen ob Filterstring im Buffer enthalten ist
-	if (strstr(RxMsg, Filterstr) != NULL ) {
-		//Position des Strings der Distanz rechnen
-		Msgpos = ((unsigned char) (strstr(RxMsg, Filterstr) - RxMsg))
-				+ sizeof(Filterstr);
-		Delay_ms(1);
-		//Solange kein Leerzeichen oder der Buffer fertig ist
-		while ((RxMsg[Msgpos] != ' ') || (Msgpos <= (BUFFERSIZE - 1))) {
-			if ((i > 3) || Msgpos > (BUFFERSIZE - 4)) {
-				//Bei mehr als drei Zeichen abbrechen
-				break;
-			}
-			value[i] = RxMsg[Msgpos + i];
-			i++;
-		}
-	}
-	//Filterstring zurücksetzten
-	memset(&Filterstr, 0, sizeof(Filterstr));
-	//Integer Wert der Distanz zurückgeben
-	valueret = atoi(value);
-	if ((valueret > 10) && (valueret < 3700)) {
-		*rad = valueret;
-	}
-
-}
-
-void USARTPrint(const unsigned char *ToSend, unsigned char length) {
-	unsigned int i;
-
-	/* Output a message  */
-	for (i = 0; i < length; i++) {
-		USART_SendData(USART1, (uint16_t) *ToSend++);
-		/* Loop until the end of transmission */
-		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
-		}
 	}
 }
 
-unsigned short SendRFMsg(const unsigned char *str) {
+/* ****************************************************************************/
+/* End : RFCommTask */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: SendRFMsg */
+/******************************************************************************/
+/*! \brief Sends a RF message and calculates the hex checksum
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+unsigned short SendRFMsg(const char *str) {
+
 	unsigned char len = 0, i = 0, j = 0;
 	unsigned int check = 0;
-	unsigned char buffer[50] = { 0 };
-	unsigned char hx[4] = { 0 };
+	char buffer[RFCOMMBUFFERSIZE] = {0};
+	char hx[4] = {0};
 
-	if (strlen(str) > 116) {
+
+	if (strlen(str) > RFCOMMBUFFERSIZE) {
 		return 0;
 	} else {
 		len = strlen(str);
@@ -180,12 +148,12 @@ unsigned short SendRFMsg(const unsigned char *str) {
 			check += str[i];
 		}
 
-		//String zum senden generieren
+		//Create string to send
 		strcat(buffer, str);
 		strcat(buffer, "/");
-		//Hex Checksumme anfügen
+		//Append hex checksum
 		sprintf(hx, "%x", check);
-		//Kleinbuchstaben zu Grossbuchstaben wandeln
+		//Convert small letters to big
 		while (hx[j] != 0) {
 			if (hx[j] >= 97) {
 				hx[j] = hx[j] - 32;
@@ -193,10 +161,43 @@ unsigned short SendRFMsg(const unsigned char *str) {
 			j++;
 		}
 		strcat(buffer, hx);
-		//CR anhängen
+		//Append CR
 		strcat(buffer, "\r");
 		strcat(buffer, "\0");
 		USARTPrint(buffer, strlen(buffer));
 		return 1;
 	}
 }
+/* ****************************************************************************/
+/* End : SendRFMsg */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: USARTPrint */
+/******************************************************************************/
+/*! \brief Print each char over the USART
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+void USARTPrint(const char *ToSend, unsigned char length) {
+	unsigned int i;
+
+	taskENTER_CRITICAL();
+	/* Output a message  */
+	for (i = 0; i < length; i++) {
+		USART_SendData(USART1, (uint16_t) *ToSend++);
+		/* Loop until the end of transmission */
+		while (USART_GetFlagStatus(USART1, USART_FLAG_TC ) == RESET) {
+		}
+	}
+	taskEXIT_CRITICAL();
+}
+/* ****************************************************************************/
+/* End : USARTPrint */
+/* ****************************************************************************/

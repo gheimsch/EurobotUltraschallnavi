@@ -22,12 +22,23 @@
 /* --------------------------------- imports ---------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
 
+#include "GyroTask.h"
+#include "PositionTask.h"
+#include "ProcessTask.h"
+#include "RFCommTask.h"
 #include "SyncTask.h"
+#include "CANGatekeeper.h"
+#include "configNavi.h"
 /* ------------------------- module data declaration -------------------------*/
 
 /* ----------------------- module procedure declaration ----------------------*/
 void initSyncTask(void);
+static void SyncTask(void* pvParameters);
+void CheckNaviRequest(uint16_t id, CAN_data_t* data);
+void SetConfiguration(uint16_t id, CAN_data_t* data);
+void EmergenyStopActivated(uint16_t id, CAN_data_t* data);
 /* ****************************************************************************/
 /* End Header : SyncTask.c */
 /* ****************************************************************************/
@@ -51,8 +62,153 @@ void initSyncTask(void) {
 	/* create the task */
 	xTaskCreate(SyncTask, (signed char *) SYNCTASK_NAME, SYNCTASK_STACK_SIZE,
 			NULL, SYNCTASK_PRIORITY, NULL);
+
+	/* set the Check Navi Request Listener */
+	setFunctionCANListener(CheckNaviRequest, CHECK_NAVI_REQUEST);
+
+	/* set the Start Configuration Set Listener */
+	setFunctionCANListener(SetConfiguration, START_CONFIGURATION_SET);
+
+	/* set the Emergency Stop Listener */
+	setFunctionCANListener(EmergenyStopActivated, EMERGENCY_STOP);
 }
 
 /* ****************************************************************************/
 /* End : initSyncTask */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: SyncTask */
+/******************************************************************************/
+/*! \brief Sync Task
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 12.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+static void SyncTask(void* pvParameters) {
+
+	/* for ever */
+	for (;;) {
+
+		vTaskDelay(1000 / portTICK_RATE_MS);
+	}
+}
+
+/* ****************************************************************************/
+/* End : SyncTask */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: CheckNaviRequest */
+/******************************************************************************/
+/*! \brief Answer over CAN-Bus on a "are you alive" Request
+ *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 15.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+void CheckNaviRequest(uint16_t id, CAN_data_t* data) {
+
+	/* give Response */
+	txCheckNaviResponse();
+}
+
+/* ****************************************************************************/
+/* End : CheckNaviRequest */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: SetConfiguration */
+/******************************************************************************/
+/*! \brief Set the Configuration done on the Menue
+ *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 15.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+void SetConfiguration(uint16_t id, CAN_data_t* data) {
+
+	/* get the teamcolor */
+	team = data->gip_color;
+
+	/* get the Number of Enemys Robots */
+	nbrEnemys = data->gip_enemy;
+
+	/* get the Number of confederate Robots */
+	nbrConfederate = data->gip_confederate;
+
+#ifdef SET_ROBO_BIG	/* if the small Robot is activated */
+
+#else	/* if the big robot is activated */
+	/* Synchronise hexamite */
+	xQueueSend(msgqRFComm, &DesyncString, 0);
+	xQueueSend(msgqRFComm, &SyncString, 0);
+
+#endif
+
+
+	/*Delay for 500ms to avoid shaking from button*/
+	vTaskDelay(500 / portTICK_RATE_MS);
+
+	/*Resume GyroTask and run compensation*/
+	xSemaphoreGive(xSyncSemaphore);
+	vTaskResume(xGyroTaskHandle);
+
+	/* give Response(not used)*/
+	//txStartConfigurationConfirm();
+}
+
+/* ****************************************************************************/
+/* End : SetConfiguration */
+/* ****************************************************************************/
+
+/******************************************************************************/
+/* Function: EmergenyStopActivated */
+/******************************************************************************/
+/*! \brief
+ *
+ * \param[in] id ID of the Message
+ * \param[in] data Data of the Message
+ *
+ * \author heimg1, zursr1
+ *
+ * \version 0.0.1
+ *
+ * \date 15.04.2014 Function created
+ *
+ *
+ *******************************************************************************/
+
+void EmergenyStopActivated(uint16_t id, CAN_data_t* data) {
+
+	/* Emergency Stop on top of Robot activated */
+
+	//do something relevant
+
+}
+
+/* ****************************************************************************/
+/* End : EmergenyStopActivated */
 /* ****************************************************************************/

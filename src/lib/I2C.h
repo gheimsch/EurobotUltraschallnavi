@@ -54,6 +54,7 @@ typedef enum{
     DISPLAY_7Segment = 0x70,
     Accelerometer  	 = 0x32,
     Gyro			 = 0xD4
+
 }SlaveI2C;
 /* ------------------------- module data declaration -------------------------*/
 

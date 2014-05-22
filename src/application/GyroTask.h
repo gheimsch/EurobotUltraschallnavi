@@ -5,13 +5,9 @@
  ******************************************************************************
  * \file	GyroTask.h
  ******************************************************************************
- * \brief Short description of the files function
+ * \brief Reads out the angulare rate of the Gyro and calculates the direction
+ * 			of the Robot
  *
- *
- * Function : More detailed description of the files function
- *
- * Procedures : ExportedFunction1()
- * ExportedFunction2()...
  *
  * \author heimg1, zursr1
  *
@@ -20,32 +16,37 @@
  * \history 10.04.2014 File Created
  *
  *
- * \ingroup <group name> [<group name 2> <group name 3>]
- *
- * \todo If u have some todo's for the h-file, add it here
- *
  */
 /* ****************************************************************************/
 /* Ultraschallnavi Eurobot 2014 */
 /* ****************************************************************************/
 
 /* --------------------------------- imports ---------------------------------*/
-
+#include "semphr.h"
 /* ----------------------- module constant declaration -----------------------*/
 #define GYROTASK_NAME			"Gyro Task"					/*!< Detailed description after the member */
-#define GYROTASK_STACK_SIZE		configMINIMAL_STACK_SIZE 		/*!< size of the receive and transmit task */
-#define GYROTASK_PRIORITY		(configMAX_PRIORITIES - 1UL) 	/*!< priority of the receive and transmit task */
+#define GYROTASK_STACK_SIZE		( configMINIMAL_STACK_SIZE ) 		/*!< size of the receive and transmit task */
+#define GYROTASK_PRIORITY		(configMAX_PRIORITIES - 2UL) 	/*!< priority of the receive and transmit task */
 
-#define GYROPOSITION_QUEUE_LENGTH	( 1 ) 				/*!< Length of the Message Queue */
-#define GYROPOSITION_ITEM_SIZE		( sizeof(long) ) 	/*!< Item size of the Elements in the Message Queue */
+/* register used to setup the gyro */
+#define CTRL_REG1_G   	0x20
+#define CTRL_REG2_G   	0x21
+#define CTRL_REG3_G   	0x22
+#define CTRL_REG4_G   	0x23
+#define CTRL_REG5_G   	0x24
+#define STATUS_REG1_G   0x27
+
+/* Register to read out data */
+#define OUT_X_L_G   	0xA8
+#define OUT_TEMP_G 		0x26
 /* ------------------------- module type declaration -------------------------*/
 
 /* ------------------------- module data declaration -------------------------*/
-
+extern float yaw;		/* measured angle (used in Position Task) */
+extern xSemaphoreHandle xSyncSemaphore;	/*reinit handle*/
+extern xTaskHandle xGyroTaskHandle;
 /* ----------------------- module procedure declaration ----------------------*/
 extern void initGyroTask(void);
-extern void GyroTask(void*);
-extern xQueueHandle msgqGyroPosition;
 extern void initGyr(void);
 extern void setGyrSensitivity(uint16_t);
 extern void calculateGyroOffsets(void);
@@ -53,7 +54,6 @@ extern void calculateDrift(void);
 extern int16_t getGyrValues(void);
 extern float getTempValue(void);
 extern void calculateAngle(int16_t, uint32_t);
-extern void Delay(volatile uint32_t nCount);
 /* ****************************************************************************/
 /* End Header : GyroTask.h */
 /* ****************************************************************************/
